@@ -9,21 +9,101 @@ class Formatter:
         pass
 
     @staticmethod
-    def load_viewer(data=None):
+    def load_viewer(data=None, kind=None):
         # print(f"[DEBUG] {type(data)}")
-        if data:
+        if data and kind:
             if isinstance(data, str):
-                console.print(data)
+                match kind:
+                    case "app_description":
+                        console.print(f"[bold][#FF8C00]{data}[/#FF8C00][/bold]")
+                    case "balance_good":
+                        table = Table(show_header=False, header_style="bold magenta")
+                        table.add_column("Balance")
+                        table.add_row(f"[green]{data}[/green]")
+                        console.print(table)
+                    case "balance_bad":
+                        table = Table(show_header=False, header_style="bold magenta")
+                        table.add_column("Balance")
+                        table.add_row(f"[red]{data}[/red]")
+                        console.print(table)
+                    case "success":
+                        console.print(f"[yellow]{data.capitalize()}[/yellow]")
+                    case "warning":
+                        console.print(f"[magenta]{data.capitalize()}[/magenta]")
+                    case "menu_question_main":
+                        console.print(f"[bold][#FF8C00]{data.capitalize()}[/#FF8C00][/bold]")
+                    case "menu_question":
+                        console.print(f"[cyan]{data.capitalize()}[/cyan]")
+                    case "menu_option":
+                        console.print(f"{data}")
             if isinstance(data, list):
+                print(f"[DEBUG] DATA IS LIST")
+                print(f"[DEBUG] KIND IS {kind}")
                 table = Table(show_header=True, header_style="bold")
-                table.add_column("Timestamp")
+                table.add_column("Timestamp", justify="right")
                 table.add_column("Value", justify="right")
                 table.add_column("Type", justify="right")
-                table.add_column("Category", justify="right", style="dim")
+                table.add_column("Category", justify="right")
                 table.add_column("Description", justify="right")
-                for item in data:
-                    item.timestamp = item.timestamp[:19].replace("T", " ")
-                    color = "green" if item.kind == "deposit" else "red"
-                    table.add_row(item.timestamp, f"[{color}]${str(item.amount)}[/{color}]", item.kind, item.category,
-                                  item.description if item.description else "n/a")
-                console.print(table)
+                transaction_balance = 0
+                i = 1
+                if kind == "transactions_list":
+                    for item in data:
+                        if item.kind == "income":
+                            color = "green"
+                            transaction_balance += item.amount
+                        else:
+                            color = "red"
+                            transaction_balance -= item.amount
+                        item.timestamp = item.timestamp[:19].replace("T", " ")
+                        print(f"[DEBUG] i: {i}")
+                        print(f"[DEBUG] len(data): {len(data)}")
+                        table.add_row(item.timestamp, f"[{color}]${str(item.amount)}[/{color}]", item.kind,
+                                      item.category,
+                                      item.description if item.description else f"[dim]n/a[/dim]",
+                                      end_section=True if i == len(data) else False)
+                        i += 1
+                    color = "green" if transaction_balance > -0.0001 else "red"
+                    table.add_row("[bold]TOTAL[/bold]", f"[{color}]${transaction_balance:.2f}[/{color}]", "", "", "",
+                                  end_section=True)
+                    console.print(table)
+                elif kind == "incomes_list":
+                    # print(f"[DEBUG] Incomes List Data: {data}")
+                    for item in data:
+                        print(f"[DEBUG] {item}")
+                        if item.kind != "income":
+                            continue
+                        transaction_balance += item.amount
+                        item.timestamp = item.timestamp[:19].replace("T", " ")
+                        print(f"[DEBUG] i: {i}")
+                        print(f"[DEBUG] len(data): {len(data)}")
+                        table.add_row(item.timestamp, f"[green]${str(item.amount)}[/green]", item.kind,
+                                      item.category,
+                                      item.description if item.description else f"[dim]n/a[/dim]",
+                                      end_section=True if i == len(data) else False)
+                        i += 1
+                    color = "green" if transaction_balance > -0.0001 else "red"
+                    table.add_row("[bold]TOTAL[/bold]", f"[{color}]${transaction_balance:.2f}[/{color}]", "", "",
+                                  "",
+                                  end_section=True)
+                    console.print(table)
+                elif kind == "expenses_list":
+                    print(f"[DEBUG] Expenses List Data: {data}")
+                    for item in data:
+                        print(f"[DEBUG] {item}, {item.kind}")
+                        if item.kind != "expense":
+                            continue
+                        transaction_balance -= item.amount
+                        item.timestamp = item.timestamp[:19].replace("T", " ")
+                        print(f"[DEBUG] i: {i}")
+                        print(f"[DEBUG] len(data): {len(data)}")
+                        table.add_row(item.timestamp, f"[red]${str(item.amount)}[/red]", item.kind,
+                                      item.category,
+                                      item.description if item.description else f"[dim]n/a[/dim]",
+                                      end_section=True if i == len(data) else False)
+                        i += 1
+                    color = "green" if transaction_balance > -0.0001 else "red"
+                    table.add_row("[bold]TOTAL[/bold]", f"[{color}]${transaction_balance:.2f}[/{color}]", "", "",
+                                  "",
+                                  end_section=True)
+                    console.print(table)

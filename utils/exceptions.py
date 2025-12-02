@@ -1,4 +1,4 @@
 class InsufficientFundsError(Exception):
-    """Raised when withdrawal would make balance negative"""
-    def __init__(self, message="Exceeding withdrawal balance!"):
+    """Raised when expense would make balance negative"""
+    def __init__(self, message="Entering negative balance!"):
         self.message = message

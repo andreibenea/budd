@@ -11,7 +11,7 @@ patterns.
 
 Some already implemented, some still a work in progress. This document will be updated as needed.
 
-- Account Management: Track your balance with deposits and withdrawals
+- Account Management: Track your balance with incomes and expenses
 - Transaction History: View detailed records of all financial activities with timestamps
 - Categorized Spending: Organize transactions by type (Food, Rent, Transportation, etc.)
 - Data Persistence: Automatic saving and loading of account data using JSON storage
@@ -59,8 +59,8 @@ python3 main.py
 Follow the on-screen menu to:
 
 - Check your current balance
-- Make deposits
-- Withdraw funds
+- Add income
+- Add expenses
 - View transaction history
 - Categorize your spending
 

@@ -12,7 +12,24 @@ class Account:
 
     def get_transactions(self):
         transactions = self.order_transactions(self._transactions)
-        return transactions
+        self._transactions = transactions
+        return self._transactions
+
+    def get_incomes(self):
+        incomes = []
+        for transaction in self._transactions:
+            if transaction.kind == "income":
+                incomes.append(transaction)
+        sorted_incomes = self.order_transactions(transactions=incomes)
+        return sorted_incomes
+
+    def get_expenses(self):
+        expenses = []
+        for transaction in self._transactions:
+            if transaction.kind == "expense":
+                expenses.append(transaction)
+        sorted_expenses = self.order_transactions(transactions=expenses)
+        return sorted_expenses
 
     def order_transactions(self, transactions):
         transactions_copy = transactions[:]
@@ -35,9 +52,7 @@ class Account:
             ordered_transactions.append(sorted_left[i])
         for j in range(j, len(sorted_right)):
             ordered_transactions.append(sorted_right[j])
-
-        self._transactions = ordered_transactions
-        return self._transactions
+        return ordered_transactions
 
     def load_balance(self, balance):
         self._balance = balance
@@ -45,11 +60,11 @@ class Account:
     def load_transactions(self, transactions):
         self._transactions = transactions
 
-    def deposit(self, transaction: Transaction):
+    def add_income(self, transaction: Transaction):
         self._balance += transaction.amount
         self._transactions.append(transaction)
 
-    def withdraw(self, transaction: Transaction):
+    def add_expense(self, transaction: Transaction):
         tentative_balance = self._balance - transaction.amount
         self._balance = tentative_balance
         self._transactions.append(transaction)
