@@ -17,11 +17,13 @@ class FileHandler:
             transactions = []
             for trans_data in data['transactions']:
                 amount = trans_data['amount']
+                kind = trans_data['kind']
                 category = trans_data['category']
                 uuid = trans_data['uuid']
                 timestamp = trans_data['timestamp']
                 description = trans_data['description']
-                transaction = Transaction(amount=amount, category=category, identifier=uuid, timestamp=timestamp,
+                transaction = Transaction(amount=amount, kind=kind, category=category, identifier=uuid,
+                                          timestamp=timestamp,
                                           description=description)
                 transactions.append(transaction)
             acc = Account()
