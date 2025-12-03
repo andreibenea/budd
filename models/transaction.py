@@ -4,9 +4,11 @@ from datetime import datetime
 
 class Transaction:
     def __init__(self, amount: float, kind: str, category: str, identifier: str | None = None,
+                 index: str | None = None,
                  timestamp: str | None = None,
                  description: str | None = None):
-        self.uuid = str(uuid.uuid4())
+        self.identifier = str(uuid.uuid4()) if identifier is None else identifier
+        self.index = index if index else None
         self.timestamp = timestamp if timestamp else datetime.now().isoformat()
         self.amount = amount
         self.kind = kind
@@ -17,4 +19,4 @@ class Transaction:
         return f"[{self.timestamp}] Amt: ${self.amount:.2f} Cat: '{self.category}' Desc: '{self.description}'"
 
     def __repr__(self):
-        return f'<Transaction: {self.uuid} : {self.amount} ; {self.kind} ; {self.description} ; {self.category}>'
+        return f'<Transaction: {self.identifier} : {self.amount} ; {self.kind} ; {self.description} ; {self.category}>'
