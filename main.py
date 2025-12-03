@@ -21,6 +21,7 @@ def show_app_name():
 
 
 def loop_menu():
+    """Maintains the main application loop and delegates command handling"""
     user_status = USER_STATUSES["main_menu"]
     while True:
         handle_command(user_status)
@@ -55,21 +56,31 @@ def show_categories_expenses_menu():
 
 
 def show_transaction_edit_menu():
+    """Displays transaction editing options for selected transaction"""
     for msg in menus["transaction_edit_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
 def show_transaction_details_menu():
+    """Displays transaction detail modification options"""
     for msg in menus["transaction_details_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
 def show_transaction_details_type_menu():
+    """Displays transaction type selection options for editing"""
     for msg in menus["transaction_details_type_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
 def handle_command(user_status: str | None = None, set_filter: str | None = None, editing: "Transaction | None" = None):
+    """ #### TO BE SPLIT INTO MULTIPLE SMALLER FUNCTIONS ####
+        Routes user interactions based on current application state
+
+        Manages navigation between menus, processes user input, and coordinates
+        transaction operations (create, read, update, delete) across different
+        application states including main menu, transaction history, and editing flows
+    """
     # print(f"[DEBUG] user status: {user_status}")
     # print(f"[DEBUG] set filter: {set_filter}")
     # print(f"[DEBUG] editing: {editing}")
