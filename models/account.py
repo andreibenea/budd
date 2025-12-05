@@ -55,6 +55,9 @@ class Account:
             ordered_transactions.append(sorted_right[j])
         return ordered_transactions
 
+    def filter_transactions(self, filter_key: str | None):
+        pass
+
     def load_balance(self, balance):
         self._balance = balance
 

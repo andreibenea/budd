@@ -14,13 +14,42 @@ menus = {
         ("5. Quit", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
-    "transaction_history_menu": [
+    "transactions_history_menu": [
         ("What do you want to do?", "menu_question_main"),
         ("1. Go back", "menu_option"),
-        ("2. Filter incomes", "menu_option"),
-        ("3. Filter expenses", "menu_option"),
-        ("4. Filter all", "menu_option"),
-        ("5. Edit transaction", "menu_option"),
+        ("2. Apply filter", "menu_option"),
+        ("3. Reset filters", "menu_option"),
+        ("4. Edit transactions", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+        # ("2. Filter incomes", "menu_option"),  # old version
+        # ("3. Filter expenses", "menu_option"),  # old version
+    ],
+    "transactions_history_filter_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Go back", "menu_option"),
+        ("2. Date & Time Filters", "menu_option"),
+        ("3. Show income transactions", "menu_option"),
+        ("4. Show expense transactions", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
+    # Go back, Quick Filters {Go back, Today, Last 7 Days, Last 30 Days},
+    # Enter Date(s) {Go back, Choose Month,
+    "transactions_history_filter_datetime_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Go back", "menu_option"),
+        ("2. Quick Filters", "menu_option"),
+        ("3. Enter Date(s)", "menu_option"),
+        ("4. Enter Time(s)", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
+    "transactions_history_filter_datetime_quick_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Go back", "menu_option"),
+        ("2. Today", "menu_option"),
+        ("3. Last 7 Days", "menu_option"),
+        ("4. Last 30 Days", "menu_option"),
+        ("5. Choose month", "menu_option"),
+        ("6. Choose year", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "transaction_edit_menu": [
@@ -38,12 +67,6 @@ menus = {
         ("4. Edit transaction description", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
-    "transaction_details_type_category_menu": [
-        ("Select new transaction type", "menu_question_main"),
-        ("1. Income", "menu_option"),
-        ("2. Expense", "menu_option"),
-        ("Type in the number corresponding to your choice:", "menu_question"),
-    ]
 }
 
 ascii_art = {
@@ -57,11 +80,22 @@ ascii_art = {
 
 USER_STATUSES = {
     "main_menu": "main_menu",
-    "transaction_history_menu": "transaction_history_menu",
-    "transaction_history_edit": "transaction_history_edit",
+    "transactions_history_menu": "transactions_history_menu",
+    "transactions_history_filter_menu": "transactions_history_filter_menu",
+    "transactions_history_selection": "transactions_history_selection",
     "transaction_edit_menu": "transaction_edit_menu",
     "transaction_details_menu": "transaction_details_menu",
+    "transactions_history_filter_datetime_menu": "transactions_history_filter_datetime_menu",
+    "transactions_history_filter_datetime_quick_menu": "transactions_history_filter_datetime_quick_menu",
 }
+
+MAIN_MENU_OPTIONS = 5
+TRANSACTIONS_HISTORY_MENU = 4
+TRANSACTIONS_HISTORY_FILTER_MENU = 4
+TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU = 4
+TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 6
+TRANSACTION_EDIT_MENU = 3
+TRANSACTION_DETAILS_MENU = 4
 
 CATEGORIES_EXPENSES = {
     "food_and_dining": "Food & Dining",

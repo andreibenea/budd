@@ -2,10 +2,14 @@
 import sys
 from models.account import Account
 from models.transaction import Transaction
-from utils.utils import messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, USER_STATUSES
+from utils.utils import messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, USER_STATUSES, \
+    MAIN_MENU_OPTIONS, TRANSACTIONS_HISTORY_MENU, TRANSACTIONS_HISTORY_FILTER_MENU, \
+    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, TRANSACTION_EDIT_MENU, \
+    TRANSACTION_DETAILS_MENU
 from utils.file_handler import FileHandler
 from utils.formatters import Formatter
 from utils.exceptions import InsufficientFundsError
+from datetime import datetime, timedelta
 
 fmt = Formatter()
 fh = FileHandler()
@@ -35,7 +39,22 @@ def show_main_menu():
 
 def show_transactions_history_menu():
     """Displays the transaction history submenu options"""
-    for msg in menus["transaction_history_menu"]:
+    for msg in menus["transactions_history_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_filter_menu():
+    for msg in menus["transactions_history_filter_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_filter_datetime_menu():
+    for msg in menus["transactions_history_filter_datetime_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_filter_datetime_quick_menu():
+    for msg in menus["transactions_history_filter_datetime_quick_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
@@ -67,10 +86,15 @@ def show_transaction_details_menu():
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
-def show_transaction_details_type_menu():
-    """Displays transaction type selection options for editing"""
-    for msg in menus["transaction_details_type_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
+def get_transactions_filtered(filter_set):
+    match filter_set:
+        case "show_incomes":
+            transactions = acc.get_incomes()
+        case "show_expenses":
+            transactions = acc.get_expenses()
+        case _:
+            transactions = acc.get_transactions()
+    return transactions
 
 
 def handle_command(user_status: str | None = None, set_filter: str | None = None, editing: "Transaction | None" = None):
@@ -81,9 +105,9 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
         transaction operations (create, read, update, delete) across different
         application states including main menu, transaction history, and editing flows
     """
-    # print(f"[DEBUG] user status: {user_status}")
-    # print(f"[DEBUG] set filter: {set_filter}")
-    # print(f"[DEBUG] editing: {editing}")
+    print(f"[DEBUG] user status: {user_status}")
+    print(f"[DEBUG] set filter: {set_filter}")
+    print(f"[DEBUG] editing: {editing}")
     match user_status:
         case "main_menu":
             """Handle actions for main menu"""
@@ -92,7 +116,7 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
             while True:
                 try:
                     user_input = int(user_input)
-                    if user_input not in range(1, 6):
+                    if user_input not in [n for n in range(1, MAIN_MENU_OPTIONS + 1)]:
                         raise ValueError
                     break
                 except ValueError:
@@ -113,6 +137,12 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                             return handle_command()
                         try:
                             amt = float(amt)
+                            if amt <= 0:
+                                if amt == 0:
+                                    print(f"Amount cannot be 0.")
+                                else:
+                                    print(f"Amount cannot be negative.")
+                                raise ValueError
                             break
                         except ValueError:
                             fmt.load_viewer(data="Please enter a valid amount!", kind="warning")
@@ -154,6 +184,12 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                             return handle_command()
                         try:
                             amt = float(amt)
+                            if amt <= 0:
+                                if amt == 0:
+                                    print(f"Amount cannot be 0.")
+                                else:
+                                    print(f"Amount cannot be negative.")
+                                raise ValueError
                             curr_balance = acc.check_balance()
                             if amt > curr_balance:
                                 raise InsufficientFundsError
@@ -209,12 +245,12 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                     if len(transactions) == 0:
                         fmt.load_viewer(data="No transactions found!", kind="warning")
                         return handle_command(user_status=USER_STATUSES["main_menu"], set_filter=None)
-                    return handle_command(user_status=USER_STATUSES["transaction_history_menu"], set_filter=set_filter)
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"], set_filter=set_filter)
                 case 5:
                     fmt.load_viewer(data="Good Bye!", kind="menu_question_main")
                     return sys.exit()
-        case "transaction_history_menu":
-            # print(f"[DEBUG] In Transaction History Menu")
+        case "transactions_history_menu":
+            print(f"[DEBUG] In Transaction History Menu")
             print("Loading transactions...")
             match set_filter:
                 case "show_incomes":
@@ -235,25 +271,22 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                     return handle_command(user_status=USER_STATUSES["main_menu"], set_filter=set_filter)
                 try:
                     user_input = int(user_input)
-                    if user_input not in range(1, 6):
+                    if user_input not in range(1, TRANSACTIONS_HISTORY_MENU + 1):
                         raise ValueError
                     break
                 except ValueError:
                     fmt.load_viewer(data=messages["select_option"], kind="warning")
                     user_input = input("> ").strip()
-            # print(f"[DEBUG] Matching user input...")
+            print(f"[DEBUG] Matching user input...")
             match user_input:
                 case 1:
                     return handle_command(user_status=USER_STATUSES["main_menu"], set_filter=set_filter)
                 case 2:
-                    return handle_command(user_status=USER_STATUSES["transaction_history_menu"],
-                                          set_filter="show_incomes")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_menu"],
+                                          set_filter=set_filter)
                 case 3:
-                    return handle_command(user_status=USER_STATUSES["transaction_history_menu"],
-                                          set_filter="show_expenses")
+                    return handle_command(USER_STATUSES["transactions_history_menu"], set_filter=None)
                 case 4:
-                    return handle_command(USER_STATUSES["transaction_history_menu"], set_filter=None)
-                case 5:
                     transactions = acc.get_transactions()
                     if len(transactions) == 0:
                         fmt.load_viewer(data="No transactions found!", kind="warning")
@@ -263,19 +296,149 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                         if len(transactions) == 0:
                             fmt.load_viewer(data="No transactions found!", kind="warning")
                             print("Removing filters...")
-                            return handle_command(user_status=USER_STATUSES["transaction_history_menu"],
+                            return handle_command(user_status=USER_STATUSES["transactions_history_menu"],
                                                   set_filter=None, editing=None)
                     if set_filter == "show_incomes":
-                        return handle_command(user_status=USER_STATUSES["transaction_history_edit"],
+                        return handle_command(user_status=USER_STATUSES["transactions_history_selection"],
                                               set_filter="show_incomes")
                     elif set_filter == "show_expenses":
-                        return handle_command(user_status=USER_STATUSES["transaction_history_edit"],
+                        return handle_command(user_status=USER_STATUSES["transactions_history_selection"],
                                               set_filter="show_expenses")
                     else:
-                        return handle_command(user_status=USER_STATUSES["transaction_history_edit"], set_filter=None)
-        case "transaction_history_edit":
-            # print(f"[DEBUG] In Transaction History EDIT Menu")
-            # print(f"[DEBUG] set_filter: {set_filter}")
+                        return handle_command(user_status=USER_STATUSES["transactions_history_selection"],
+                                              set_filter=None)
+        case "transactions_history_filter_menu":
+            transactions = get_transactions_filtered(filter_set=set_filter)
+            fmt.load_viewer(data=transactions, kind="transactions_list")
+            show_transactions_history_filter_menu()
+            filter_choice = input("> ").strip().lower()
+            while True:
+                if filter_choice == "cancel":
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"],
+                                          set_filter=set_filter)
+                try:
+                    filter_choice = int(filter_choice)
+                    if filter_choice not in range(1, TRANSACTIONS_HISTORY_FILTER_MENU + 1):
+                        raise ValueError
+                    break
+                except ValueError:
+                    fmt.load_viewer(data=messages["select_option"], kind="warning")
+                    filter_choice = input("> ").strip().lower()
+            match filter_choice:
+                case 1:
+                    """Go back"""
+                    print(f"[DEBUG] Going back..")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"],
+                                          set_filter=set_filter)
+                case 2:
+                    """Date & Time Filters"""
+                    print("Implement NEXT!")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_menu"],
+                                          set_filter=set_filter)
+                case 3:
+                    print(f"[DEBUG] pressing the 3")
+                    handle_command(user_status=USER_STATUSES["transactions_history_menu"],
+                                   set_filter="show_incomes")
+                case 4:
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"],
+                                          set_filter="show_expenses")
+        case "transactions_history_filter_datetime_menu":
+            print("[DEBUG] In Transactions History DATETIME menu")
+            transactions = get_transactions_filtered(filter_set=set_filter)
+            fmt.load_viewer(data=transactions, kind="transactions_list")
+            show_transactions_history_filter_datetime_menu()
+            filter_choice = input("> ").strip().lower()
+            while True:
+                if filter_choice == "cancel":
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"], set_filter=set_filter)
+                try:
+                    filter_choice = int(filter_choice)
+                    if filter_choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU + 1):
+                        raise ValueError
+                    break
+                except ValueError:
+                    fmt.load_viewer(data=messages["select_option"], kind="warning")
+                    filter_choice = input("> ").strip().lower()
+            match filter_choice:
+                case 1:
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_menu"],
+                                          set_filter=set_filter)
+                case 2:
+                    transactions = get_transactions_filtered(filter_set=set_filter)
+                    fmt.load_viewer(data=transactions, kind="transactions_list")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                          set_filter=set_filter)
+                case 3:
+                    """Implement date (period) selection"""
+                case 4:
+                    """Implement time picker / filter"""
+        case "transactions_history_filter_datetime_quick_menu":
+            today = datetime.today()
+            transactions = get_transactions_filtered(filter_set=set_filter)
+            show_transactions_history_filter_datetime_quick_menu()
+            filter_choice = input("> ").strip().lower()
+            while True:
+                if filter_choice == "cancel":
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_menu"],
+                                          set_filter=set_filter)
+                try:
+                    filter_choice = int(filter_choice)
+                    if filter_choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU + 1):
+                        raise ValueError
+                    break
+                except ValueError:
+                    fmt.load_viewer(data=messages["select_option"], kind="warning")
+                    filter_choice = input("> ").strip().lower()
+            match filter_choice:
+                case 1:
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_menu"],
+                                          set_filter=set_filter)
+                case 2:
+                    """Today"""
+                    today = str(datetime.today())
+                    today_transactions = []
+                    for transaction in transactions:
+                        if transaction.timestamp[8:10] == today[8:10]:
+                            today_transactions.append(transaction)
+                    if len(today_transactions) == 0:
+                        fmt.load_viewer(data="No transactions found!", kind="warning")
+                    else:
+                        fmt.load_viewer(data=today_transactions, kind="transactions_list")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                          set_filter=set_filter)
+                case 3:
+                    """Last 7 Days"""
+                    last_seven_days_transactions = []
+                    for transaction in transactions:
+                        if today - timedelta(days=7) <= datetime.fromisoformat(transaction.timestamp) <= today:
+                            last_seven_days_transactions.append(transaction)
+                    if len(last_seven_days_transactions) == 0:
+                        fmt.load_viewer(data="No transactions found!", kind="warning")
+                    else:
+                        fmt.load_viewer(data=last_seven_days_transactions, kind="transactions_list")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                          set_filter=set_filter)
+                case 4:
+                    """Last 30 Days"""
+                    last_seven_days_transactions = []
+                    for transaction in transactions:
+                        if today - timedelta(days=30) <= datetime.fromisoformat(transaction.timestamp) <= today:
+                            last_seven_days_transactions.append(transaction)
+                    if len(last_seven_days_transactions) == 0:
+                        fmt.load_viewer(data="No transactions found!", kind="warning")
+                    else:
+                        fmt.load_viewer(data=last_seven_days_transactions, kind="transactions_list")
+                    return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                          set_filter=set_filter)
+                case 5:
+                    """Choose month"""
+                    pass
+                case 6:
+                    """Choose year"""
+                    pass
+        case "transactions_history_selection":
+            print(f"[DEBUG] In Transaction History EDIT Menu")
+            print(f"[DEBUG] set_filter: {set_filter}")
             if editing:
                 fmt.load_viewer(
                     data=[editing.timestamp, editing.amount, editing.kind, editing.category,
@@ -297,7 +460,7 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                 selected_id = input("> ").strip()
                 while True:
                     if selected_id == "cancel":
-                        return handle_command(user_status=USER_STATUSES["transaction_history_menu"],
+                        return handle_command(user_status=USER_STATUSES["transactions_history_menu"],
                                               set_filter=set_filter)
                     try:
                         selected_id = int(selected_id)
@@ -316,8 +479,8 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                     idx_counter += 1
             return handle_command(user_status=USER_STATUSES["transaction_edit_menu"], set_filter=set_filter)
         case "transaction_edit_menu":
-            # print(f"[DEBUG] In Transaction EDIT Menu")
-            # print(f"[DEBUG] set_filter: {set_filter}")
+            print(f"[DEBUG] In Transaction EDIT Menu")
+            print(f"[DEBUG] set_filter: {set_filter}")
             if editing:
                 fmt.load_viewer(
                     data=[editing.timestamp, editing.amount, editing.kind, editing.category,
@@ -325,11 +488,11 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
             show_transaction_edit_menu()
             user_input = input("> ").strip()
             if user_input == "cancel":
-                return handle_command(user_status=USER_STATUSES["transaction_history_menu"], set_filter=set_filter)
+                return handle_command(user_status=USER_STATUSES["transactions_history_menu"], set_filter=set_filter)
             while True:
                 try:
                     user_input = int(user_input)
-                    if user_input not in range(1, 4):
+                    if user_input not in range(1, TRANSACTION_EDIT_MENU + 1):
                         raise ValueError
                     break
                 except ValueError:
@@ -337,19 +500,19 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                     user_input = input("> ").strip()
             match user_input:
                 case 1:
-                    return handle_command(user_status=USER_STATUSES["transaction_history_menu"], set_filter=set_filter)
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"], set_filter=set_filter)
                 case 2:
                     acc.delete_transaction(transaction=editing)
                     editing = None
                     fh.save_account(account=acc)
-                    return handle_command(user_status=USER_STATUSES["transaction_history_menu"], set_filter=set_filter,
+                    return handle_command(user_status=USER_STATUSES["transactions_history_menu"], set_filter=set_filter,
                                           editing=editing)
                 case 3:
                     return handle_command(user_status=USER_STATUSES["transaction_details_menu"], set_filter=set_filter,
                                           editing=editing)
         case "transaction_details_menu":
-            # print(f"[DEBUG] In Transaction DETAILS Menu")
-            # print(f"[DEBUG] set_filter: {set_filter}")
+            print(f"[DEBUG] In Transaction DETAILS Menu")
+            print(f"[DEBUG] set_filter: {set_filter}")
             if editing:
                 fmt.load_viewer(
                     data=[editing.timestamp, editing.amount, editing.kind, editing.category, editing.description],
@@ -363,7 +526,7 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
             while True:
                 try:
                     user_input = int(user_input)
-                    if user_input not in range(1, 5):
+                    if user_input not in range(1, TRANSACTION_DETAILS_MENU + 1):
                         raise ValueError
                     break
                 except ValueError:
@@ -372,21 +535,25 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                 case 1:
                     fmt.load_viewer(data="Type in the new amount", kind="menu_question_main")
                     print(messages["cancel"])
-                    new_amount = input("> ").strip()
+                    new_amt = input("> ").strip()
                     while True:
-                        if new_amount == "cancel":
+                        if new_amt == "cancel":
                             return handle_command(user_status=USER_STATUSES["transaction_details_menu"],
                                                   set_filter=set_filter, editing=editing)
                         try:
-                            new_amount = float(new_amount)
-                            if new_amount < 0:
+                            new_amt = float(new_amt)
+                            if new_amt <= 0:
+                                if new_amt == 0:
+                                    print("Amount cannot be 0.")
+                                else:
+                                    print("Amount cannot be negative.")
                                 raise ValueError
                             break
                         except ValueError:
                             fmt.load_viewer(data="Please enter a valid amount!", kind="warning")
                             print(messages["cancel"])
-                            new_amount = input("> ").strip()
-                    acc.edit_transaction(transaction=editing, change_type="value", value=new_amount)
+                            new_amt = input("> ").strip()
+                    acc.edit_transaction(transaction=editing, change_type="value", value=new_amt)
                     fh.save_account(account=acc)
                 case 2:
                     if editing.kind == "income":
@@ -394,13 +561,13 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                     elif editing.kind == "expense":
                         acc.edit_transaction(transaction=editing, change_type="kind", value="income")
                     if editing.kind == "income":
-                        print(f"New transaction type '{editing.kind}' needs new category!")
+                        print(f"New transaction type '{editing.kind}' needs a new category!")
                         fmt.load_viewer(data="Select category", kind="menu_question_main")
                         show_categories_income_menu()
                         print(messages["select_option"])
                         user_input = input("> ").strip()
                     elif editing.kind == "expense":
-                        print(f"New transaction type '{editing.kind}' needs new category!")
+                        print(f"New transaction type '{editing.kind}' needs a new category!")
                         fmt.load_viewer(data="Select category", kind="menu_question_main")
                         show_categories_expenses_menu()
                         print(messages["select_option"])
@@ -430,7 +597,7 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                         print(messages["select_option"])
                         user_input = input("> ").strip()
                     elif editing.kind == "expense":
-                        print(f"New transaction type '{editing.kind}' needs new category!")
+                        print(f"New transaction type '{editing.kind}' needs a new category!")
                         fmt.load_viewer(data="Select category", kind="menu_question_main")
                         show_categories_expenses_menu()
                         print(messages["select_option"])

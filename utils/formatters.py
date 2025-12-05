@@ -1,12 +1,15 @@
 from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
 from rich.table import Table
 
 console = Console()
 
 
 class Formatter:
-    def __init__(self, **kwargs):
-        pass
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
 
     @staticmethod
     def load_viewer(data=None, kind=None):
@@ -131,3 +134,7 @@ class Formatter:
                                   str(data[4]) if data[4] else "[dim]n/a[/dim]",
                                   end_section=True)
                     console.print(table)
+
+    @staticmethod
+    def transactions_viewer(data=None, kind=None):
+        pass
