@@ -1,6 +1,8 @@
 messages = {
     "cancel": "Type in 'cancel' if you'd like to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
+    "select_month": "Type in month number (1-12) or name (e.g., January)\nOr type 'cancel' to abort.",
+    "select_year": "Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
     "select_transaction": "Select a transaction by typing its 'Index'\nOr type 'cancel' to abort.",
 }
 
@@ -82,11 +84,27 @@ USER_STATUSES = {
     "main_menu": "main_menu",
     "transactions_history_menu": "transactions_history_menu",
     "transactions_history_filter_menu": "transactions_history_filter_menu",
-    "transactions_history_selection": "transactions_history_selection",
     "transaction_edit_menu": "transaction_edit_menu",
-    "transaction_details_menu": "transaction_details_menu",
     "transactions_history_filter_datetime_menu": "transactions_history_filter_datetime_menu",
     "transactions_history_filter_datetime_quick_menu": "transactions_history_filter_datetime_quick_menu",
+    "transactions_history_filter_datetime_timeframe_menu": "transactions_history_filter_datetime_timeframe_menu",
+    "transactions_history_selection": "transactions_history_selection",
+    "transaction_details_menu": "transaction_details_menu",
+}
+
+MONTHS = {
+    "january": "01", "jan": "01",
+    "february": "02", "feb": "02",
+    "march": "03", "mar": "03",
+    "april": "04", "apr": "04",
+    "may": "05",
+    "june": "06", "jun": "06",
+    "july": "07", "jul": "07",
+    "august": "08", "aug": "08",
+    "september": "09", "sep": "09", "sept": "09",
+    "october": "10", "oct": "10",
+    "november": "11", "nov": "11",
+    "december": "12", "dec": "12"
 }
 
 MAIN_MENU_OPTIONS = 5

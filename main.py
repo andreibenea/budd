@@ -5,10 +5,11 @@ from models.transaction import Transaction
 from utils.utils import messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, USER_STATUSES, \
     MAIN_MENU_OPTIONS, TRANSACTIONS_HISTORY_MENU, TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, TRANSACTION_EDIT_MENU, \
-    TRANSACTION_DETAILS_MENU
+    TRANSACTION_DETAILS_MENU, MONTHS
 from utils.file_handler import FileHandler
 from utils.formatters import Formatter
 from utils.exceptions import InsufficientFundsError
+from utils.validators import is_date_valid
 from datetime import datetime, timedelta
 
 fmt = Formatter()
@@ -97,7 +98,121 @@ def get_transactions_filtered(filter_set):
     return transactions
 
 
-def handle_command(user_status: str | None = None, set_filter: str | None = None, editing: "Transaction | None" = None):
+def load_selected_month(filter_set, month, year):
+    transactions = get_transactions_filtered(filter_set=filter_set)
+    monthly_transactions = []
+    for transaction in transactions:
+        dt = datetime.fromisoformat(transaction.timestamp)
+        if dt.month == month and dt.year == year:
+            monthly_transactions.append(transaction)
+    if len(monthly_transactions) == 0:
+        return fmt.load_viewer(data="No transactions found!", kind="warning")
+    else:
+        return fmt.load_viewer(data=monthly_transactions, kind="transactions_list")
+
+
+def load_selected_year(filter_set, year):
+    transactions = get_transactions_filtered(filter_set=filter_set)
+    yearly_transactions = []
+    for transaction in transactions:
+        dt = datetime.fromisoformat(transaction.timestamp)
+        if dt.year == year:
+            yearly_transactions.append(transaction)
+    if len(yearly_transactions) == 0:
+        return fmt.load_viewer(data="No transactions found!", kind="warning")
+    else:
+        return fmt.load_viewer(data=yearly_transactions, kind="transactions_list")
+
+
+def load_timeframe(set_filter):
+    transactions = get_transactions_filtered(filter_set=set_filter)
+    selected_transactions = []
+    start_date = create_date()
+    end_date = create_date(is_end_date=True)
+    print(start_date)
+    print(end_date)
+    for transaction in transactions:
+        dt_timestamp = datetime.fromisoformat(transaction.timestamp)
+        if start_date <= dt_timestamp <= end_date:
+            selected_transactions.append(transaction)
+    if not selected_transactions:
+        return fmt.load_viewer(data="No transactions found!", kind="warning")
+    fmt.load_viewer(data=selected_transactions, kind="transactions_list")
+
+
+def create_date(is_end_date: bool = False):
+    if is_end_date:
+        fmt.load_viewer(
+            data="Type in year (e.g. '1970', '2025').\nor leave empty for current year\nOr type 'cancel' to abort.",
+            kind="menu_question_main")
+    else:
+        fmt.load_viewer(data="Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
+                        kind="menu_question_main")
+    year_input = input("> ").strip().lower()
+    while True:
+        if year_input == "cancel":
+            return
+        if not is_end_date:
+            if year_input:
+                break
+            fmt.load_viewer(data="You need a starting year.\nType one in or type 'cancel' to abort.", kind="warning")
+            year_input = input("> ").strip().lower()
+        else:
+            break
+    fmt.load_viewer(
+        data="Type in month (e.g. '1' or 'January')\nLeave empty if not needed\nOr type 'cancel' to abort.",
+        kind="menu_question_main")
+    month_input = input("> ").strip().lower()
+    if month_input == "cancel":
+        return
+    fmt.load_viewer(
+        data="Type in day (e.g. '1', '11', '31').\nleave empty if not needed\nOr type 'cancel' to abort.",
+        kind="menu_question_main")
+    day_input = input("> ").strip().lower()
+    if day_input == "cancel":
+        return
+    while True:
+        invalid_inputs = []
+        if year_input:
+            if not is_date_valid(year=year_input):
+                invalid_inputs.append(year_input)
+        if month_input:
+            if not is_date_valid(month=month_input):
+                invalid_inputs.append(month_input)
+        if day_input:
+            if not is_date_valid(day=day_input):
+                invalid_inputs.append(day_input)
+        if not invalid_inputs:
+            break
+        if year_input in invalid_inputs:
+            fmt.load_viewer(data="Type in a valid year", kind="warning")
+            year_input = input("> ").strip().lower()
+        if month_input in invalid_inputs:
+            fmt.load_viewer(data="Type in a valid month", kind="warning")
+            month_input = input("> ").strip().lower()
+        if day_input in invalid_inputs:
+            fmt.load_viewer(data="Type in a valid day", kind="warning")
+            day_input = input("> ").strip().lower()
+    print(f"[DEBUG] {year_input}, {month_input}, {day_input}")
+    if year_input is None or year_input == "":
+        year_input = datetime.now().year
+    if month_input is None or month_input == "":
+        month_input = "01" if not is_end_date else str(datetime.now().month)
+    if len(month_input) == 1:
+        month_input = "0" + month_input
+    if month_input in MONTHS:
+        month_input = MONTHS[month_input]
+    if day_input is None or day_input == "":
+        day_input = "01" if not is_end_date else str(datetime.now().day)
+    if len(day_input) == 1:
+        day_input = "0" + day_input
+    date_string = f"{year_input}-{month_input}-{day_input}"
+    dt = datetime.fromisoformat(date_string)
+    return dt
+
+
+def handle_command(user_status: str | None = None, set_filter: str | None = None, timeframe: bool = False,
+                   editing: "Transaction | None" = None):
     """ #### TO BE SPLIT INTO MULTIPLE SMALLER FUNCTIONS ####
         Routes user interactions based on current application state
 
@@ -336,16 +451,18 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                     return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_menu"],
                                           set_filter=set_filter)
                 case 3:
-                    print(f"[DEBUG] pressing the 3")
+                    print(f"[DEBUG] Showing income transactions")
                     handle_command(user_status=USER_STATUSES["transactions_history_menu"],
                                    set_filter="show_incomes")
                 case 4:
+                    print(f"[DEBUG] Showing expense transactions")
                     return handle_command(user_status=USER_STATUSES["transactions_history_menu"],
                                           set_filter="show_expenses")
         case "transactions_history_filter_datetime_menu":
             print("[DEBUG] In Transactions History DATETIME menu")
             transactions = get_transactions_filtered(filter_set=set_filter)
-            fmt.load_viewer(data=transactions, kind="transactions_list")
+            if not timeframe:
+                fmt.load_viewer(data=transactions, kind="transactions_list")
             show_transactions_history_filter_datetime_menu()
             filter_choice = input("> ").strip().lower()
             while True:
@@ -359,19 +476,25 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                 except ValueError:
                     fmt.load_viewer(data=messages["select_option"], kind="warning")
                     filter_choice = input("> ").strip().lower()
+            transactions = get_transactions_filtered(filter_set=set_filter)
             match filter_choice:
                 case 1:
                     return handle_command(user_status=USER_STATUSES["transactions_history_filter_menu"],
                                           set_filter=set_filter)
                 case 2:
-                    transactions = get_transactions_filtered(filter_set=set_filter)
                     fmt.load_viewer(data=transactions, kind="transactions_list")
                     return handle_command(user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
                                           set_filter=set_filter)
                 case 3:
                     """Implement date (period) selection"""
+                    load_timeframe(set_filter)
+                    return handle_command(
+                        user_status=USER_STATUSES["transactions_history_filter_datetime_menu"],
+                        set_filter=set_filter, timeframe=True)
                 case 4:
                     """Implement time picker / filter"""
+                    print("Feature not yet implemented")
+                    return handle_command(user_status=USER_STATUSES["main_menu"], set_filter=set_filter)
         case "transactions_history_filter_datetime_quick_menu":
             today = datetime.today()
             transactions = get_transactions_filtered(filter_set=set_filter)
@@ -432,10 +555,71 @@ def handle_command(user_status: str | None = None, set_filter: str | None = None
                                           set_filter=set_filter)
                 case 5:
                     """Choose month"""
-                    pass
+                    fmt.load_viewer(data="Type in month (e.g. 'november' or '11'?", kind="menu_question_main")
+                    print(messages["cancel"])
+                    month_input = input("> ").strip().lower()
+                    while True:
+                        if month_input == "cancel":
+                            return handle_command(
+                                user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                set_filter=set_filter)
+                        if month_input not in MONTHS:
+                            try:
+                                month_input = int(month_input)
+                                if month_input in range(1, 13):
+                                    break
+                                raise ValueError
+                            except ValueError:
+                                fmt.load_viewer(data=messages["select_month"], kind="warning")
+                                month_input = input("> ").strip().lower()
+                        month_input = fmt.transform_month_to_int(month_input)
+                        break
+                    fmt.load_viewer(data="Type in year (e.g. '1970', '2025).", kind="menu_question_main")
+                    print(messages["cancel"])
+                    year_input = input("> ").strip().lower()
+                    while True:
+                        if year_input == "cancel":
+                            return handle_command(
+                                user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                set_filter=set_filter)
+                        try:
+                            year_input = int(year_input)
+                            current_year = datetime.today().year
+                            if year_input not in range(1970, current_year + 1):
+                                raise ValueError
+                            break
+                        except ValueError:
+                            fmt.load_viewer(data=messages["select_year"], kind="warning")
+                            year_input = input("> ").strip().lower()
+                    load_selected_month(filter_set=set_filter, month=month_input, year=year_input)
+                    return handle_command(
+                        user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                        set_filter=set_filter)
                 case 6:
                     """Choose year"""
-                    pass
+                    fmt.load_viewer(data="Type in year (e.g. '1970', '2025).", kind="menu_question_main")
+                    print(messages["cancel"])
+                    year_input = input("> ").strip().lower()
+                    while True:
+                        if year_input == "cancel":
+                            return handle_command(
+                                user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                                set_filter=set_filter)
+                        try:
+                            year_input = int(year_input)
+                            current_year = datetime.today().year
+                            if year_input not in range(1970, current_year + 1):
+                                raise ValueError
+                            break
+                        except ValueError:
+                            fmt.load_viewer(data=messages["select_year"], kind="warning")
+                            year_input = input("> ").strip().lower()
+                    load_selected_year(filter_set=set_filter, year=year_input)
+                    return handle_command(
+                        user_status=USER_STATUSES["transactions_history_filter_datetime_quick_menu"],
+                        set_filter=set_filter)
+        case "transactions_history_filter_datetime_timeframe_menu":
+            show_transactions_history_filter_datetime_menu()
         case "transactions_history_selection":
             print(f"[DEBUG] In Transaction History EDIT Menu")
             print(f"[DEBUG] set_filter: {set_filter}")

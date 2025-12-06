@@ -1,7 +1,8 @@
 from rich.console import Console
-from rich.layout import Layout
-from rich.panel import Panel
 from rich.table import Table
+
+# from rich.layout import Layout
+# from rich.panel import Panel
 
 console = Console()
 
@@ -136,5 +137,29 @@ class Formatter:
                     console.print(table)
 
     @staticmethod
-    def transactions_viewer(data=None, kind=None):
-        pass
+    def transform_month_to_int(month_name):
+        match month_name:
+            case 'january':
+                return 1
+            case 'february':
+                return 2
+            case 'march':
+                return 3
+            case 'april':
+                return 4
+            case 'may':
+                return 5
+            case 'june':
+                return 6
+            case 'july':
+                return 7
+            case 'august':
+                return 8
+            case 'september':
+                return 9
+            case 'october':
+                return 10
+            case 'november':
+                return 11
+            case 'december':
+                return 12
