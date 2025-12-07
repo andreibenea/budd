@@ -1,9 +1,112 @@
+from utils.formatters import Formatter
+
+fmt = Formatter()
+
+
+def load_menu(user_view, filters: dict | None = None):
+    match user_view:
+        case "main_menu":
+            fmt.load_viewer(data="You Are Here:\n[Main Menu]", kind="path_to_view")
+            show_main_menu()
+        case "transactions_history_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > [Transactions]", kind="path_to_view")
+            show_transactions_history_menu()
+        case "transactions_history_filter_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Manage Filters]", kind="path_to_view")
+            show_transactions_history_filter_menu()
+        case "transactions_history_filter_categories_menu":
+            if filters:
+                if "kind" in filters:
+                    if filters["kind"] == "income":
+                        user_view = USER_VIEWS["transactions_history_filter_categories_incomes_menu"]
+                        load_menu(user_view, filters)
+                    elif filters["kind"] == "expense":
+                        user_view = USER_VIEWS["transactions_history_filter_categories_expenses_menu"]
+                        load_menu(user_view, filters)
+            else:
+                fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > [Categories]",
+                                kind="path_to_view")
+                show_transactions_history_filter_categories_menu()
+        case "transactions_history_filter_categories_incomes_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Incomes]",
+                            kind="path_to_view")
+            show_categories_income_menu_new()
+        case "transactions_history_filter_categories_expenses_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Expenses]",
+                            kind="path_to_view")
+            show_categories_expenses_menu_new()
+
+
+def show_main_menu():
+    """Displays the main menu options for primary app navigation"""
+    for msg in menus["main_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_menu():
+    """Displays the transaction history submenu options"""
+    for msg in menus["transactions_history_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_filter_menu():
+    for msg in menus["transactions_history_filter_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_filter_categories_menu():
+    for msg in menus["transactions_history_filter_categories_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_categories_income_menu_new():
+    """Displays all income categories available for menu selection"""
+    for msg in menus["transactions_history_filter_categories_incomes_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_categories_expenses_menu_new():
+    """Displays all income categories available for menu selection"""
+    for msg in menus["transactions_history_filter_categories_expenses_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def toggle_filter(filters, sub_category, kind: str | None = None):
+    try:
+        if filters["category"]:
+            pass
+    except KeyError:
+        filters["category"] = {}
+    if kind == "income":
+        try:
+            if filters["category"][sub_category] == CATEGORIES_INCOME[sub_category]:
+                del filters["category"][sub_category]
+                if len(filters["category"]) == 0:
+                    del filters["category"]
+        except KeyError:
+            filters["category"][sub_category] = CATEGORIES_INCOME[sub_category]
+    if kind == "expense":
+        try:
+            if filters["category"][sub_category] == CATEGORIES_EXPENSES[sub_category]:
+                del filters["category"][sub_category]
+                if len(filters["category"]) == 0:
+                    del filters["category"]
+        except KeyError:
+            filters["category"][sub_category] = CATEGORIES_EXPENSES[sub_category]
+    return filters
+
+
 messages = {
+    "insert_amount": "Type in the amount.",
+    "insufficient_funds": "Adding this expense will cause balance to be negative!",
+    "insufficient_funds_continue": "Press Enter/Return to continue, insert a smaller amount or type 'cancel' to abort",
+    "invalid_amount": "Amount invalid! Try again or type in 'cancel' to abort.",
     "cancel": "Type in 'cancel' if you'd like to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
     "select_month": "Type in month number (1-12) or name (e.g., January)\nOr type 'cancel' to abort.",
     "select_year": "Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
     "select_transaction": "Select a transaction by typing its 'Index'\nOr type 'cancel' to abort.",
+    "successful_transaction": "Transaction saved successfully!",
 }
 
 menus = {
