@@ -18,21 +18,51 @@ menus = {
     ],
     "transactions_history_menu": [
         ("What do you want to do?", "menu_question_main"),
-        ("1. Go back", "menu_option"),
-        ("2. Apply filter", "menu_option"),
-        ("3. Reset filters", "menu_option"),
-        ("4. Edit transactions", "menu_option"),
+        ("1. Back to main menu", "menu_option"),
+        ("2. Manage filters", "menu_option"),
+        ("3. Select transaction", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
-        # ("2. Filter incomes", "menu_option"),  # old version
-        # ("3. Filter expenses", "menu_option"),  # old version
     ],
     "transactions_history_filter_menu": [
         ("What do you want to do?", "menu_question_main"),
-        ("1. Go back", "menu_option"),
-        ("2. Date & Time Filters", "menu_option"),
-        ("3. Show income transactions", "menu_option"),
-        ("4. Show expense transactions", "menu_option"),
+        ("1. Back to transactions", "menu_option"),
+        ("2. Filter by type (income, expense)", "menu_option"),
+        ("3. Filter by category", "menu_option"),
+        ("4. Filter by date", "menu_option"),
+        ("5. Clear all filters", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
+    "transactions_history_filter_categories_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Back to manage filters", "menu_option"),
+        ("2. Load income categories", "menu_option"),
+        ("3. Load expense categories", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
+    "transactions_history_filter_categories_incomes_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Back to filter categories", "menu_option"),
+        ("2. Set filter: Salary", "menu_option"),
+        ("3. Set filter: Freelance", "menu_option"),
+        ("4. Set filter: Business", "menu_option"),
+        ("5. Set filter: Investment", "menu_option"),
+        ("6. Set filter: Gift", "menu_option"),
+        ("7. Set filter: Refund", "menu_option"),
+        ("8. Set filter: Other", "menu_option"),
+        ("9. Clear all category filters", "menu_option"),
+    ],
+    "transactions_history_filter_categories_expenses_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Back to filter categories", "menu_option"),
+        ("2. Set filter: Food & Dining", "menu_option"),
+        ("3. Set filter: Housing", "menu_option"),
+        ("4. Set filter: Transportation", "menu_option"),
+        ("5. Set filter: Entertainment", "menu_option"),
+        ("6. Set filter: Shopping", "menu_option"),
+        ("7. Set filter: Healthcare", "menu_option"),
+        ("8. Set filter: Utilities", "menu_option"),
+        ("9. Set filter: Other", "menu_option"),
+        ("10. Clear all category filters", "menu_option"),
     ],
     # Go back, Quick Filters {Go back, Today, Last 7 Days, Last 30 Days},
     # Enter Date(s) {Go back, Choose Month,
@@ -80,16 +110,21 @@ ascii_art = {
  """
 }
 
-USER_STATUSES = {
+USER_VIEWS = {
     "main_menu": "main_menu",
+    "add_income": "add_income",
+    "add_expense": "add_expense",
+    "transaction_details_menu": "transaction_details_menu",
+    "transaction_edit_menu": "transaction_edit_menu",
     "transactions_history_menu": "transactions_history_menu",
     "transactions_history_filter_menu": "transactions_history_filter_menu",
-    "transaction_edit_menu": "transaction_edit_menu",
+    "transactions_history_filter_categories_menu": "transactions_history_filter_categories_menu",
+    "transactions_history_filter_categories_incomes_menu": "transactions_history_filter_categories_incomes_menu",
+    "transactions_history_filter_categories_expenses_menu": "transactions_history_filter_categories_expenses_menu",
     "transactions_history_filter_datetime_menu": "transactions_history_filter_datetime_menu",
     "transactions_history_filter_datetime_quick_menu": "transactions_history_filter_datetime_quick_menu",
     "transactions_history_filter_datetime_timeframe_menu": "transactions_history_filter_datetime_timeframe_menu",
     "transactions_history_selection": "transactions_history_selection",
-    "transaction_details_menu": "transaction_details_menu",
 }
 
 MONTHS = {
@@ -108,8 +143,11 @@ MONTHS = {
 }
 
 MAIN_MENU_OPTIONS = 5
-TRANSACTIONS_HISTORY_MENU = 4
-TRANSACTIONS_HISTORY_FILTER_MENU = 4
+TRANSACTIONS_HISTORY_MENU = 3
+TRANSACTIONS_HISTORY_FILTER_MENU = 5
+TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU = 3
+TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU = 9
+TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU = 10
 TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU = 4
 TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 6
 TRANSACTION_EDIT_MENU = 3
