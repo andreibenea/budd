@@ -18,6 +18,8 @@ class Formatter:
         if data and kind:
             if isinstance(data, str):
                 match kind:
+                    case "path_to_view":
+                        console.print(f"[dim]{data}[/dim]")
                     case "app_description":
                         console.print(f"[bold][#FF8C00]{data}[/#FF8C00][/bold]")
                     case "balance_good":
