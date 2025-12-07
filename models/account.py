@@ -55,8 +55,39 @@ class Account:
             ordered_transactions.append(sorted_right[j])
         return ordered_transactions
 
-    def filter_transactions(self, filter_key: str | None):
-        pass
+    @staticmethod
+    def filter_transactions(transactions: list, filters: dict):
+        # print(f"[DEBUG] Incoming FILTERS: {filters}")
+        transactions_copy = transactions[:]
+        filters_copy = filters.copy()
+        filtered_transactions = []
+        if not filters:
+            return transactions_copy
+        if "kind" in filters:
+            del filters_copy["kind"]
+            if filters["kind"] == "income":
+                transactions_copy = list(filter(lambda tr: tr.kind == "income", transactions))
+            elif filters["kind"] == "expense":
+                transactions_copy = list(filter(lambda tr: tr.kind == "expense", transactions))
+            if len(filters) == 1:
+                filtered_transactions = transactions_copy
+                return filtered_transactions
+        for transaction in transactions_copy:
+            for flt in filters_copy:
+                if flt in transaction.__dict__:
+                    if flt == "category":
+                        for cat in filters_copy[flt]:
+                            if cat == "other" and "kind" in filters:
+                                if filters["kind"] == transaction.kind:
+                                    if transaction not in filtered_transactions:
+                                        filtered_transactions.append(transaction)
+                            elif filters_copy[flt][cat] == transaction.__dict__[flt]:
+                                if transaction not in filtered_transactions:
+                                    filtered_transactions.append(transaction)
+                    elif transaction.__dict__[flt] == filters_copy[flt]:
+                        if transaction not in filtered_transactions:
+                            filtered_transactions.append(transaction)
+        return filtered_transactions
 
     def load_balance(self, balance):
         self._balance = balance
