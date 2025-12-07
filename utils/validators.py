@@ -1,10 +1,13 @@
 from datetime import datetime
-from utils.utils import MONTHS, MAIN_MENU_OPTIONS, TRANSACTIONS_HISTORY_MENU, \
+from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MONTHS, MAIN_MENU_OPTIONS, \
+    TRANSACTIONS_HISTORY_MENU, \
     TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, TRANSACTION_EDIT_MENU, \
     TRANSACTION_DETAILS_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU, \
     TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU
+from utils.exceptions import InsufficientFundsError
 from utils.formatters import Formatter as fmt
+from models.account import Account
 
 
 class ValidateUserInput:
@@ -16,7 +19,7 @@ class ValidateUserInput:
         self.validation_type = validation_type
 
     @staticmethod
-    def validate_selection(choice: str, user_view: str | None = None):
+    def validate_selection(choice: str, user_view: str | None = None, kind: str | None = None):
         while True:
             if choice == "cancel":
                 return False, choice
@@ -53,12 +56,70 @@ class ValidateUserInput:
                     case "transaction_edit_menu":
                         if choice not in range(1, TRANSACTION_EDIT_MENU + 1):
                             raise ValueError
+                    case "add_income":
+                        if choice not in range(1, len(CATEGORIES_INCOME) + 1):
+                            raise ValueError
+                    case "add_expense":
+                        if choice not in range(1, len(CATEGORIES_EXPENSES) + 1):
+                            raise ValueError
                 break
             except ValueError:
                 fmt.load_viewer(data="Type in number corresponding to your choice\nOr type 'cancel' to abort.",
                                 kind="warning")
                 choice = input("> ").strip().lower()
+        if kind:
+            i = 1
+            if kind == "income":
+                for cat in CATEGORIES_INCOME:
+                    if i == choice:
+                        choice = CATEGORIES_INCOME[cat]
+                    i += 1
+            elif kind == "expense":
+                for cat in CATEGORIES_EXPENSES:
+                    if i == choice:
+                        choice = CATEGORIES_EXPENSES[cat]
+                    i += 1
         return True, choice
+
+    @staticmethod
+    def is_amount_valid(account: "Account", amount: str, kind: str):
+        if kind == "income":
+            while True:
+                if amount == "cancel":
+                    return False, amount
+                try:
+                    amount = float(amount)
+                    if amount <= 0:
+                        raise ValueError
+                    break
+                except ValueError:
+                    fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
+                    amount = input("> ").strip().lower()
+            return True, amount
+        if kind == "expense":
+            ignore_negative_balance = False
+            initial_amount = amount
+            while True:
+                if amount == "cancel":
+                    return False, amount
+                if amount == "ok":
+                    ignore_negative_balance = True
+                    amount = initial_amount
+                try:
+                    amount = float(amount)
+                    if amount <= 0:
+                        raise ValueError
+                    if amount > account.check_balance() and not ignore_negative_balance:
+                        raise InsufficientFundsError
+                    break
+                except InsufficientFundsError:
+                    fmt.load_viewer(data=messages["insufficient_funds"], kind="warning")
+                    fmt.load_viewer(data=messages["insufficient_funds_continue"], kind="warning")
+                    amount = input("> ").strip().lower()
+                except ValueError:
+                    fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
+                    amount = input("> ").strip().lower()
+            return True, amount
 
     @staticmethod
     def is_date_valid(year=None, month=None, day=None) -> bool:

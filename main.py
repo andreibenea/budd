@@ -2,7 +2,8 @@
 import sys
 from models.account import Account
 from models.transaction import Transaction
-from utils.utils import messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, USER_VIEWS, \
+from utils.utils import load_menu, toggle_filter, messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, \
+    USER_VIEWS, \
     MAIN_MENU_OPTIONS, TRANSACTIONS_HISTORY_MENU, TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, TRANSACTION_EDIT_MENU, \
     TRANSACTION_DETAILS_MENU, MONTHS
@@ -31,7 +32,6 @@ def main_loop():
     filters = {}
     editing = None
     while True:
-        print(f"[DEBUG] Looping...")
         match user_view:
             case "main_menu":
                 user_view, filters, editing = loop_main_menu(user_view, filters, editing)
@@ -53,65 +53,6 @@ def main_loop():
                                                                                                         editing)
 
 
-def toggle_filter(filters, sub_category, kind: str | None = None):
-    try:
-        if filters["category"]:
-            pass
-    except KeyError:
-        filters["category"] = {}
-    if kind == "income":
-        try:
-            if filters["category"][sub_category] == CATEGORIES_INCOME[sub_category]:
-                del filters["category"][sub_category]
-                if len(filters["category"]) == 0:
-                    del filters["category"]
-        except KeyError:
-            filters["category"][sub_category] = CATEGORIES_INCOME[sub_category]
-    if kind == "expense":
-        try:
-            if filters["category"][sub_category] == CATEGORIES_EXPENSES[sub_category]:
-                del filters["category"][sub_category]
-                if len(filters["category"]) == 0:
-                    del filters["category"]
-        except KeyError:
-            filters["category"][sub_category] = CATEGORIES_EXPENSES[sub_category]
-    return filters
-
-
-def load_menu(user_view, filters: dict | None = None):
-    match user_view:
-        case "main_menu":
-            fmt.load_viewer(data="You Are Here:\n[Main Menu]", kind="path_to_view")
-            show_main_menu()
-        case "transactions_history_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > [Transactions]", kind="path_to_view")
-            show_transactions_history_menu()
-        case "transactions_history_filter_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Manage Filters]", kind="path_to_view")
-            show_transactions_history_filter_menu()
-        case "transactions_history_filter_categories_menu":
-            if filters:
-                if "kind" in filters:
-                    if filters["kind"] == "income":
-                        user_view = USER_VIEWS["transactions_history_filter_categories_incomes_menu"]
-                        load_menu(user_view, filters)
-                    elif filters["kind"] == "expense":
-                        user_view = USER_VIEWS["transactions_history_filter_categories_expenses_menu"]
-                        load_menu(user_view, filters)
-            else:
-                fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > [Categories]",
-                                kind="path_to_view")
-                show_transactions_history_filter_categories_menu()
-        case "transactions_history_filter_categories_incomes_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Incomes]",
-                            kind="path_to_view")
-            show_categories_income_menu_new()
-        case "transactions_history_filter_categories_expenses_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Expenses]",
-                            kind="path_to_view")
-            show_categories_expenses_menu_new()
-
-
 def loop_main_menu(user_view, filters, editing):
     print(f"[DEBUG] user_view: {user_view}")
     print(f"[DEBUG] filters: {filters}")
@@ -123,14 +64,14 @@ def loop_main_menu(user_view, filters, editing):
         match int(user_input):
             case 1:
                 """Check current balance"""
-                fmt.load_viewer(data=f"Current balance: ${acc.check_balance()}",
+                fmt.load_viewer(data=f"Current balance: ${acc.check_balance():.2f}",
                                 kind="balance_good" if acc.check_balance() >= 0 else "balance_bad")
             case 2:
                 """Add income"""
-                fmt.load_viewer(data="Not YET implemented!", kind="warning")
+                create_transaction("income")
             case 3:
                 """Add expense"""
-                fmt.load_viewer(data="Not YET implemented!", kind="warning")
+                create_transaction("expense")
             case 4:
                 """View all transactions"""
                 user_view = USER_VIEWS["transactions_history_menu"]
@@ -279,46 +220,80 @@ def loop_transactions_history_filter_categories_expenses_menu(user_view, filters
                     user_view = USER_VIEWS["transactions_history_filter_categories_menu"]
             case 2:
                 """Set filter: Food & Dining"""
+                filters = toggle_filter(filters=filters, sub_category="food_and_dining", kind="expense")
             case 3:
                 """Set filter: Housing"""
+                filters = toggle_filter(filters=filters, sub_category="housing", kind="expense")
             case 4:
                 """Set filter: Transportation"""
+                filters = toggle_filter(filters=filters, sub_category="transportation", kind="expense")
             case 5:
                 """Set filter: Entertainment"""
+                filters = toggle_filter(filters=filters, sub_category="entertainment", kind="expense")
             case 6:
                 """Set filter: Shopping"""
+                filters = toggle_filter(filters=filters, sub_category="shopping", kind="expense")
             case 7:
                 """Set filter: Healthcare"""
+                filters = toggle_filter(filters=filters, sub_category="healthcare", kind="expense")
             case 8:
                 """Set filter: Utilities"""
+                filters = toggle_filter(filters=filters, sub_category="utilities", kind="expense")
             case 9:
                 """Set filter: Other"""
+                filters = toggle_filter(filters=filters, sub_category="other", kind="expense")
             case 10:
                 """Clear all category filters"""
-                pass
+                try:
+                    if filters["category"]:
+                        del filters["category"]
+                except KeyError:
+                    pass
     return user_view, filters, editing
 
 
-def show_main_menu():
-    """Displays the main menu options for primary app navigation"""
-    for msg in menus["main_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_menu():
-    """Displays the transaction history submenu options"""
-    for msg in menus["transactions_history_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_filter_menu():
-    for msg in menus["transactions_history_filter_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_filter_categories_menu():
-    for msg in menus["transactions_history_filter_categories_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
+def create_transaction(kind):
+    new_transaction = ""
+    can_create_transaction = False
+    if kind == "income":
+        fmt.load_viewer(data=messages["insert_amount"], kind="menu_question")
+        user_input = input("> ").strip().lower()
+        is_valid, amount = validator.is_amount_valid(account=acc, amount=user_input, kind="income")
+        if is_valid:
+            show_categories_income_menu()
+            fmt.load_viewer(data=messages["select_option"], kind="menu_question")
+            category_choice = input("> ").strip().lower()
+            is_cat_valid, category_choice = validator.validate_selection(choice=category_choice, user_view="add_income",
+                                                                         kind="income")
+            if is_cat_valid:
+                new_transaction = Transaction(amount=amount, category=category_choice, kind=kind)
+                can_create_transaction = True
+        else:
+            return
+    if kind == "expense":
+        fmt.load_viewer(data=messages["insert_amount"], kind="menu_question")
+        user_input = input("> ").strip().lower()
+        is_valid, amount = validator.is_amount_valid(account=acc, amount=user_input, kind="expense")
+        if is_valid:
+            show_categories_expenses_menu()
+            fmt.load_viewer(data=messages["select_option"], kind="menu_question")
+            category_choice = input("> ").strip().lower()
+            is_cat_valid, category_choice = validator.validate_selection(choice=category_choice,
+                                                                         user_view="add_expense", kind="expense")
+            if is_cat_valid:
+                new_transaction = Transaction(amount=amount, category=category_choice, kind=kind)
+                can_create_transaction = True
+        else:
+            return
+    if can_create_transaction:
+        if kind == "income":
+            acc.add_income(new_transaction)
+        elif kind == "expense":
+            acc.add_expense(new_transaction)
+        fmt.load_viewer(data=messages["successful_transaction"], kind="success")
+        fmt.load_viewer(data=f"Your new balance is: ${acc.check_balance():.2f}",
+                        kind="balance_bad" if acc.check_balance() < 0 else "balance_good")
+        fh.save_account(account=acc)
 
 
 def show_transactions_history_filter_datetime_menu():
@@ -337,18 +312,6 @@ def show_categories_income_menu():
     for category in CATEGORIES_INCOME:
         fmt.load_viewer(data=f"{i}. {CATEGORIES_INCOME[category]}", kind="menu_option")
         i += 1
-
-
-def show_categories_income_menu_new():
-    """Displays all income categories available for menu selection"""
-    for msg in menus["transactions_history_filter_categories_incomes_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_categories_expenses_menu_new():
-    """Displays all income categories available for menu selection"""
-    for msg in menus["transactions_history_filter_categories_expenses_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
 def show_categories_expenses_menu():
@@ -510,7 +473,7 @@ def handle_command(user_view: str | None = None, set_filter: str | None = None, 
     match user_view:
         case "main_menu":
             """Handle actions for main menu"""
-            show_main_menu()
+            # show_main_menu()
             user_input = input("> ").strip()
             while True:
                 try:
@@ -663,7 +626,7 @@ def handle_command(user_view: str | None = None, set_filter: str | None = None, 
                     fmt.load_viewer(data=transactions, kind="transactions_list")
             if len(transactions) == 0:
                 fmt.load_viewer(data=f"No transactions found!", kind="warning")
-            show_transactions_history_menu()
+            # show_transactions_history_menu()
             user_input = input("> ").strip()
             while True:
                 if user_input == "cancel":
@@ -709,7 +672,7 @@ def handle_command(user_view: str | None = None, set_filter: str | None = None, 
         case "transactions_history_filter_menu":
             transactions = get_transactions_filtered(filter_set=set_filter)
             fmt.load_viewer(data=transactions, kind="transactions_list")
-            show_transactions_history_filter_menu()
+            # show_transactions_history_filter_menu()
             filter_choice = input("> ").strip().lower()
             while True:
                 if filter_choice == "cancel":
