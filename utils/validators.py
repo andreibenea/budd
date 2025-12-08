@@ -2,7 +2,8 @@ from datetime import datetime
 from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MONTHS, MAIN_MENU_OPTIONS, \
     TRANSACTIONS_HISTORY_MENU, \
     TRANSACTIONS_HISTORY_FILTER_MENU, \
-    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, TRANSACTION_EDIT_MENU, \
+    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
+    TRANSACTION_SELECTED_MENU, \
     TRANSACTION_DETAILS_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU, \
     TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU
 from utils.exceptions import InsufficientFundsError
@@ -50,11 +51,11 @@ class ValidateUserInput:
                     case "transactions_history_filter_datetime_quick_menu":
                         if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU + 1):
                             raise ValueError
+                    case "transaction_selected_menu":
+                        if choice not in range(1, TRANSACTION_SELECTED_MENU + 1):
+                            raise ValueError
                     case "transaction_details_menu":
                         if choice not in range(1, TRANSACTION_DETAILS_MENU + 1):
-                            raise ValueError
-                    case "transaction_edit_menu":
-                        if choice not in range(1, TRANSACTION_EDIT_MENU + 1):
                             raise ValueError
                     case "add_income":
                         if choice not in range(1, len(CATEGORIES_INCOME) + 1):

@@ -35,11 +35,27 @@ def load_menu(user_view, filters: dict | None = None):
             fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Expenses]",
                             kind="path_to_view")
             show_categories_expenses_menu_new()
+        case "transaction_selected_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Selected Transaction]",
+                            kind="path_to_view")
+            show_transaction_selected_menu()
 
 
 def show_main_menu():
     """Displays the main menu options for primary app navigation"""
     for msg in menus["main_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transaction_selected_menu():
+    """Displays transaction editing options for selected transaction"""
+    for msg in menus["transaction_selected_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transaction_details_menu():
+    """Displays transaction detail modification options"""
+    for msg in menus["transaction_details_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
@@ -105,7 +121,7 @@ messages = {
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
     "select_month": "Type in month number (1-12) or name (e.g., January)\nOr type 'cancel' to abort.",
     "select_year": "Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
-    "select_transaction": "Select a transaction by typing its 'Index'\nOr type 'cancel' to abort.",
+    "select_transaction": "Select a transaction by typing in its 'Index'\nOr type 'cancel' to abort.",
     "successful_transaction": "Transaction saved successfully!",
 }
 
@@ -187,9 +203,9 @@ menus = {
         ("6. Choose year", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
-    "transaction_edit_menu": [
+    "transaction_selected_menu": [
         ("What do you want to do?", "menu_question_main"),
-        ("1. Go back", "menu_option"),
+        ("1. Back to transactions", "menu_option"),
         ("2. Delete transaction", "menu_option"),
         ("3. Edit transaction", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
@@ -218,7 +234,7 @@ USER_VIEWS = {
     "add_income": "add_income",
     "add_expense": "add_expense",
     "transaction_details_menu": "transaction_details_menu",
-    "transaction_edit_menu": "transaction_edit_menu",
+    "transaction_selected_menu": "transaction_selected_menu",
     "transactions_history_menu": "transactions_history_menu",
     "transactions_history_filter_menu": "transactions_history_filter_menu",
     "transactions_history_filter_categories_menu": "transactions_history_filter_categories_menu",
@@ -253,7 +269,7 @@ TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU = 9
 TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU = 10
 TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU = 4
 TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 6
-TRANSACTION_EDIT_MENU = 3
+TRANSACTION_SELECTED_MENU = 3
 TRANSACTION_DETAILS_MENU = 4
 
 CATEGORIES_EXPENSES = {

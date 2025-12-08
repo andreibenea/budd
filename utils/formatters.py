@@ -73,7 +73,7 @@ class Formatter:
                         item.timestamp = item.timestamp[:19].replace("T", " ")
                         # print(f"[DEBUG] i: {i}")
                         # print(f"[DEBUG] len(data): {len(data)}")
-                        table.add_row(f"[bold cyan]{i}[/bold cyan].", item.timestamp,
+                        table.add_row(f"[bold cyan]{item.index}[/bold cyan].", item.timestamp,
                                       f"[{color}]${str(item.amount)}[/{color}]", item.kind,
                                       item.category,
                                       item.description if item.description else f"[dim]n/a[/dim]",
@@ -94,7 +94,7 @@ class Formatter:
                         item.timestamp = item.timestamp[:19].replace("T", " ")
                         # print(f"[DEBUG] i: {i}")
                         # print(f"[DEBUG] len(data): {len(data)}")
-                        table.add_row(f"[bold cyan]{i}[/bold cyan].", item.timestamp,
+                        table.add_row(f"[bold cyan]{item.index}[/bold cyan].", item.timestamp,
                                       f"[green]${str(item.amount)}[/green]", item.kind,
                                       item.category,
                                       item.description if item.description else f"[dim]n/a[/dim]",
@@ -115,7 +115,8 @@ class Formatter:
                         item.timestamp = item.timestamp[:19].replace("T", " ")
                         # print(f"[DEBUG] i: {i}")
                         # print(f"[DEBUG] len(data): {len(data)}")
-                        table.add_row(f"[bold cyan]{i}[/bold cyan].", item.timestamp, f"[red]${str(item.amount)}[/red]",
+                        table.add_row(f"[bold cyan]{item.index}[/bold cyan].", item.timestamp,
+                                      f"[red]${str(item.amount)}[/red]",
                                       item.kind,
                                       item.category,
                                       item.description if item.description else f"[dim]n/a[/dim]",
@@ -133,8 +134,8 @@ class Formatter:
                     table.add_column("Type", justify="right")
                     table.add_column("Category", justify="right")
                     table.add_column("Description", justify="right")
-                    table.add_row(str(data[0]), str(data[1]), str(data[2]), str(data[3]),
-                                  str(data[4]) if data[4] else "[dim]n/a[/dim]",
+                    table.add_row(str(data[0].timestamp), str(data[0].amount), str(data[0].kind), str(data[0].category),
+                                  str(data[0].description) if data[0].description else "[dim]n/a[/dim]",
                                   end_section=True)
                     console.print(table)
 

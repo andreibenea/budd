@@ -5,7 +5,8 @@ from models.transaction import Transaction
 from utils.utils import load_menu, toggle_filter, messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, \
     USER_VIEWS, \
     MAIN_MENU_OPTIONS, TRANSACTIONS_HISTORY_MENU, TRANSACTIONS_HISTORY_FILTER_MENU, \
-    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, TRANSACTION_EDIT_MENU, \
+    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
+    TRANSACTION_SELECTED_MENU, \
     TRANSACTION_DETAILS_MENU, MONTHS
 from utils.file_handler import FileHandler
 from utils.formatters import Formatter
@@ -32,9 +33,14 @@ def main_loop():
     filters = {}
     editing = None
     while True:
+        print(f"[DEBUG] user_view: {user_view}")
+        print(f"[DEBUG] filters: {filters}")
+        print(f"[DEBUG] editing: {editing}")
         match user_view:
             case "main_menu":
                 user_view, filters, editing = loop_main_menu(user_view, filters, editing)
+            case "transaction_selected_menu":
+                user_view, filters, editing = loop_transaction_selected_menu(user_view, filters, editing)
             case "transactions_history_menu":
                 """Starts up transactions history menu"""
                 user_view, filters, editing = loop_transactions_history_menu(user_view, filters, editing)
@@ -54,9 +60,6 @@ def main_loop():
 
 
 def loop_main_menu(user_view, filters, editing):
-    print(f"[DEBUG] user_view: {user_view}")
-    print(f"[DEBUG] filters: {filters}")
-    print(f"[DEBUG] editing: {editing}")
     load_menu(user_view)
     user_input = input("> ").strip().lower()
     is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
@@ -97,7 +100,10 @@ def loop_transactions_history_menu(user_view, filters, editing):
                 user_view = USER_VIEWS["transactions_history_filter_menu"]
             case 3:
                 """Select transaction"""
-                fmt.load_viewer(data="Not YET implemented!", kind="warning")
+                selected_transaction = select_transaction(filtered_transactions)
+                if selected_transaction:
+                    editing = selected_transaction
+                    user_view = USER_VIEWS["transaction_selected_menu"]
     return user_view, filters, editing
 
 
@@ -252,6 +258,25 @@ def loop_transactions_history_filter_categories_expenses_menu(user_view, filters
     return user_view, filters, editing
 
 
+def loop_transaction_selected_menu(user_view, filters, editing):
+    fmt.load_viewer(data=[editing], kind="transaction_details")
+    load_menu(user_view)
+    user_input = input("> ").strip().lower()
+    is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
+    if is_valid:
+        match int(user_input):
+            case 1:
+                """Go back to transactions menu"""
+                editing = None
+                user_view = USER_VIEWS["transactions_history_menu"]
+            case 2:
+                """Delete transaction"""
+            case 3:
+                """Edit transaction menu"""
+                user_view = USER_VIEWS["transaction_details_menu"]
+    return user_view, filters, editing
+
+
 def create_transaction(kind):
     new_transaction = ""
     can_create_transaction = False
@@ -294,6 +319,36 @@ def create_transaction(kind):
         fmt.load_viewer(data=f"Your new balance is: ${acc.check_balance():.2f}",
                         kind="balance_bad" if acc.check_balance() < 0 else "balance_good")
         fh.save_account(account=acc)
+
+
+def select_transaction(transactions):
+    fmt.load_viewer(data=transactions, kind="transactions_list")
+    fmt.load_viewer(data=messages["select_transaction"], kind="menu_question")
+    selected_index = input("> ").strip().lower()
+    available_indexes = []
+    for transaction in transactions:
+        print(f"[DEBUG] tr_idx: {transaction.index}")
+        available_indexes.append(transaction.index)
+    available_indexes.sort()
+    print(available_indexes)
+    while True:
+        if selected_index == "cancel":
+            return None
+        try:
+            selected_index = int(selected_index)
+            if selected_index not in available_indexes:
+                print(f"[DEBUG] Selected index not in available transactions!")
+                raise ValueError
+            break
+        except ValueError:
+            fmt.load_viewer(data=messages["select_option"], kind="warning")
+            selected_index = input("> ").strip().lower()
+    for transaction in transactions:
+        print(f"[DEBUG] tr_idx: <{transaction.index}> VS. selected_idx: <{selected_index}>")
+        if selected_index == transaction.index:
+            print(f"[DEBUG] selection result: {transaction}")
+            return transaction
+    return None
 
 
 def show_transactions_history_filter_datetime_menu():
@@ -923,7 +978,7 @@ def handle_command(user_view: str | None = None, set_filter: str | None = None, 
             while True:
                 try:
                     user_input = int(user_input)
-                    if user_input not in range(1, TRANSACTION_EDIT_MENU + 1):
+                    if user_input not in range(1, TRANSACTION_SELECTED_MENU + 1):
                         raise ValueError
                     break
                 except ValueError:
