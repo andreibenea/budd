@@ -41,6 +41,8 @@ def main_loop():
                 user_view, filters, editing = loop_main_menu(user_view, filters, editing)
             case "transaction_selected_menu":
                 user_view, filters, editing = loop_transaction_selected_menu(user_view, filters, editing)
+            case "transaction_details_menu":
+                user_view, filters, editing = loop_transactions_details_menu(user_view, filters, editing)
             case "transactions_history_menu":
                 """Starts up transactions history menu"""
                 user_view, filters, editing = loop_transactions_history_menu(user_view, filters, editing)
@@ -271,9 +273,52 @@ def loop_transaction_selected_menu(user_view, filters, editing):
                 user_view = USER_VIEWS["transactions_history_menu"]
             case 2:
                 """Delete transaction"""
+                fmt.load_viewer(data=f"This will permanently delete {editing}\nAre you sure?", kind="warning")
+                load_menu("transaction_selected_delete_menu")
+                user_input = input("> ").strip().lower()
+                is_valid, user_input = validator.validate_selection(choice=user_input,
+                                                                    user_view="transaction_selected_delete_menu")
+                if is_valid:
+                    match int(user_input):
+                        case 1:
+                            """Back to selected transaction"""
+                            return editing
+                        case 2:
+                            """Delete selected transaction"""
+                            acc.delete_transaction(editing)
+                            fh.save_account(account=acc)
+                            editing = None
+                            user_view = USER_VIEWS["transactions_history_menu"]
             case 3:
                 """Edit transaction menu"""
                 user_view = USER_VIEWS["transaction_details_menu"]
+    return user_view, filters, editing
+
+
+def loop_transactions_details_menu(user_view, filters, editing):
+    fmt.load_viewer(data=[editing], kind="transaction_details")
+    load_menu(user_view)
+    user_input = input("> ").strip().lower()
+    is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
+    if is_valid:
+        match int(user_input):
+            case 1:
+                """Go back to selected transaction menu"""
+                user_view = USER_VIEWS["transaction_selected_menu"]
+            case 2:
+                """Edit transaction value"""
+                fmt.load_viewer(data=messages["insert_amount"], kind="menu_question_main")
+                user_input = input("> ").strip().lower()
+                is_amount_valid, user_input = validator.is_updated_amount_valid(account=acc, transaction=editing,
+                                                                                amount=user_input)
+                if is_amount_valid:
+                    editing.amount = user_input
+            case 3:
+                """Change transaction type"""
+            case 4:
+                """Edit transaction category"""
+            case 5:
+                """Edit transaction description"""
     return user_view, filters, editing
 
 

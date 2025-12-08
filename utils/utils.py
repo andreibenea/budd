@@ -39,6 +39,15 @@ def load_menu(user_view, filters: dict | None = None):
             fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Selected Transaction]",
                             kind="path_to_view")
             show_transaction_selected_menu()
+        case "transaction_selected_delete_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Selected Transaction > [Confirm Deletion]",
+                            kind="path_to_view")
+            show_transaction_selected_delete_menu()
+        case "transaction_details_menu":
+            fmt.load_viewer(
+                data="You Are Here:\nMain Menu > Transactions > Selected Transaction > [Transaction Details]",
+                kind="path_to_view")
+            show_transaction_details_menu()
 
 
 def show_main_menu():
@@ -50,6 +59,11 @@ def show_main_menu():
 def show_transaction_selected_menu():
     """Displays transaction editing options for selected transaction"""
     for msg in menus["transaction_selected_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transaction_selected_delete_menu():
+    for msg in menus["transaction_selected_delete_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
@@ -113,7 +127,7 @@ def toggle_filter(filters, sub_category, kind: str | None = None):
 
 
 messages = {
-    "insert_amount": "Type in the amount.",
+    "insert_amount": "Type in the desired amount.",
     "insufficient_funds": "Adding this expense will cause balance to be negative!",
     "insufficient_funds_continue": "Press Enter/Return to continue, insert a smaller amount or type 'cancel' to abort",
     "invalid_amount": "Amount invalid! Try again or type in 'cancel' to abort.",
@@ -210,12 +224,17 @@ menus = {
         ("3. Edit transaction", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
+    "transaction_selected_delete_menu": [
+        ("1. No", "menu_option"),
+        ("2. Yes", "menu_option"),
+    ],
     "transaction_details_menu": [
         ("What do you want to do?", "menu_question_main"),
-        ("1. Edit transaction value", "menu_option"),
-        ("2. Change transaction type", "menu_option"),
-        ("3. Edit transaction category", "menu_option"),
-        ("4. Edit transaction description", "menu_option"),
+        ("1. Back to selected transaction", "menu_option"),
+        ("2. Edit transaction value", "menu_option"),
+        ("3. Change transaction type", "menu_option"),
+        ("4. Edit transaction category", "menu_option"),
+        ("5. Edit transaction description", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
 }
@@ -270,7 +289,8 @@ TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU = 10
 TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU = 4
 TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 6
 TRANSACTION_SELECTED_MENU = 3
-TRANSACTION_DETAILS_MENU = 4
+TRANSACTION_SELECTED_DELETE_MENU = 2
+TRANSACTION_DETAILS_MENU = 5
 
 CATEGORIES_EXPENSES = {
     "food_and_dining": "Food & Dining",
