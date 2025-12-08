@@ -128,13 +128,15 @@ class Formatter:
                                   end_section=True)
                     console.print(table)
                 elif kind == "transaction_details":
+                    color = "green" if data[0].kind == "income" else "red"
                     table = Table(show_header=True, header_style="bold")
                     table.add_column("Timestamp", justify="right")
                     table.add_column("Value", justify="right")
                     table.add_column("Type", justify="right")
                     table.add_column("Category", justify="right")
                     table.add_column("Description", justify="right")
-                    table.add_row(str(data[0].timestamp), str(data[0].amount), str(data[0].kind), str(data[0].category),
+                    table.add_row(str(data[0].timestamp), f"[{color}]{str(data[0].amount)}[/{color}]",
+                                  str(data[0].kind), str(data[0].category),
                                   str(data[0].description) if data[0].description else "[dim]n/a[/dim]",
                                   end_section=True)
                     console.print(table)
