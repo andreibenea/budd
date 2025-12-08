@@ -111,6 +111,7 @@ def loop_transactions_history_menu(user_view, filters, editing):
         match int(user_input):
             case 1:
                 """Go back to main menu"""
+                filters = {}
                 user_view = USER_VIEWS["main_menu"]
             case 2:
                 """Manage filters"""
@@ -350,6 +351,7 @@ def loop_transactions_history_filter_datetime_quick_menu(user_view, filters, edi
     load_menu(user_view)
     user_input = input("> ").strip().lower()
     is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
+    today_midnight = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
     if is_valid:
         match int(user_input):
             case 1:
@@ -357,19 +359,19 @@ def loop_transactions_history_filter_datetime_quick_menu(user_view, filters, edi
                 user_view = USER_VIEWS["transactions_history_filter_datetime_menu"]
             case 2:
                 """Today"""
-                pass
+                if "timestamp" in filters:
+                    del filters["timestamp"]
+                filters = add_timestamp_filter(filters, today_midnight, datetime.now(), "date")
             case 3:
                 """Last 7 Days"""
-                pass
+                if "timestamp" in filters:
+                    del filters["timestamp"]
+                filters = add_timestamp_filter(filters, today_midnight - timedelta(days=7), datetime.now(), "date")
             case 4:
                 """Last 30 Days"""
-                pass
-            case 5:
-                """Choose month(s)"""
-                pass
-            case 6:
-                """Choose year(s)"""
-                pass
+                if "timestamp" in filters:
+                    del filters["timestamp"]
+                filters = add_timestamp_filter(filters, today_midnight - timedelta(days=30), datetime.now(), "date")
     return user_view, filters, editing
 
 

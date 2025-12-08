@@ -146,10 +146,12 @@ def add_timestamp_filter(filters: dict, start, end, mode: str | None = None):
         date_filters.append(entry)
     if mode == "date":
         new_entry["date"] = (start, end)
-        date_filters.append(new_entry)
+        if new_entry["date"] not in date_filters:
+            date_filters.append(new_entry)
     elif mode == "time":
         new_entry["time"] = (start, end)
-        date_filters.append(new_entry)
+        if new_entry["time"] not in date_filters:
+            date_filters.append(new_entry)
     filters["timestamp"] = date_filters
     return filters
 
@@ -224,7 +226,7 @@ menus = {
         ("1. Back to transactions", "menu_option"),
         ("2. Filter by type (income, expense)", "menu_option"),
         ("3. Filter by category", "menu_option"),
-        ("4. Filter by date", "menu_option"),
+        ("4. Filter by date or time", "menu_option"),
         ("5. Clear all filters", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
@@ -276,8 +278,6 @@ menus = {
         ("2. Today", "menu_option"),
         ("3. Last 7 Days", "menu_option"),
         ("4. Last 30 Days", "menu_option"),
-        ("5. Choose month(s)", "menu_option"),
-        ("6. Choose year(s)", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "transaction_selected_menu": [
@@ -378,7 +378,7 @@ TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU = 3
 TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU = 9
 TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU = 10
 TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU = 4
-TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 6
+TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 4
 TRANSACTION_SELECTED_MENU = 3
 TRANSACTION_SELECTED_DELETE_MENU = 2
 TRANSACTION_DETAILS_MENU = 5
