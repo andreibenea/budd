@@ -122,13 +122,20 @@ class Account:
         # print(f"[DEBUG] New value: {value}")
         match change_type:
             case "value":
-                if transaction.kind == "income":
-                    if value > transaction.amount:
-                        self._balance += value - transaction.amount
-                    elif value < transaction.amount:
-                        self._balance -= transaction.amount - value
-                    else:
-                        pass
+                if value == transaction.amount:
+                    pass
+                elif value > transaction.amount:
+                    diff = value - transaction.amount
+                    if transaction.kind == "income":
+                        self._balance += diff
+                    elif transaction.kind == "expense":
+                        self._balance -= diff
+                elif value < transaction.amount:
+                    diff = transaction.amount - value
+                    if transaction.kind == "income":
+                        self._balance -= diff
+                    elif transaction.kind == "expense":
+                        self._balance += diff
                 transaction.amount = value
             case "kind":
                 if transaction.kind == "income":

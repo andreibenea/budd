@@ -137,6 +137,8 @@ messages = {
     "select_year": "Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
     "select_transaction": "Select a transaction by typing in its 'Index'\nOr type 'cancel' to abort.",
     "successful_transaction": "Transaction saved successfully!",
+    "successful_transaction_update": "Transaction updated successfully!",
+    "successful_transaction_deleted" : "Transaction deleted successfully!",
 }
 
 menus = {

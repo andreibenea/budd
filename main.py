@@ -287,6 +287,7 @@ def loop_transaction_selected_menu(user_view, filters, editing):
                             """Delete selected transaction"""
                             acc.delete_transaction(editing)
                             fh.save_account(account=acc)
+                            fmt.load_viewer(data=messages["successful_transaction_deleted"], kind="success")
                             editing = None
                             user_view = USER_VIEWS["transactions_history_menu"]
             case 3:
@@ -309,10 +310,12 @@ def loop_transactions_details_menu(user_view, filters, editing):
                 """Edit transaction value"""
                 fmt.load_viewer(data=messages["insert_amount"], kind="menu_question_main")
                 user_input = input("> ").strip().lower()
-                is_amount_valid, user_input = validator.is_updated_amount_valid(account=acc, transaction=editing,
-                                                                                amount=user_input)
+                is_amount_valid, user_input = validator.is_amount_valid(account=acc, transaction=editing,
+                                                                        amount=user_input, kind=editing.kind)
                 if is_amount_valid:
-                    editing.amount = user_input
+                    acc.edit_transaction(transaction=editing, change_type="value", value=user_input)
+                    fh.save_account(account=acc)
+                    fmt.load_viewer(data=messages["successful_transaction_update"], kind="success")
             case 3:
                 """Change transaction type"""
             case 4:
@@ -360,10 +363,10 @@ def create_transaction(kind):
             acc.add_income(new_transaction)
         elif kind == "expense":
             acc.add_expense(new_transaction)
+        fh.save_account(account=acc)
         fmt.load_viewer(data=messages["successful_transaction"], kind="success")
         fmt.load_viewer(data=f"Your new balance is: ${acc.check_balance():.2f}",
                         kind="balance_bad" if acc.check_balance() < 0 else "balance_good")
-        fh.save_account(account=acc)
 
 
 def select_transaction(transactions):
