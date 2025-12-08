@@ -3,12 +3,13 @@ from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MONTHS
     TRANSACTIONS_HISTORY_MENU, \
     TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
-    TRANSACTION_SELECTED_MENU, \
+    TRANSACTION_SELECTED_MENU, TRANSACTION_SELECTED_DELETE_MENU, \
     TRANSACTION_DETAILS_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU, \
     TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU
 from utils.exceptions import InsufficientFundsError
 from utils.formatters import Formatter as fmt
 from models.account import Account
+from models.transaction import Transaction
 
 
 class ValidateUserInput:
@@ -54,6 +55,9 @@ class ValidateUserInput:
                     case "transaction_selected_menu":
                         if choice not in range(1, TRANSACTION_SELECTED_MENU + 1):
                             raise ValueError
+                    case "transaction_selected_delete_menu":
+                        if choice not in range(1, TRANSACTION_SELECTED_DELETE_MENU + 1):
+                            raise ValueError
                     case "transaction_details_menu":
                         if choice not in range(1, TRANSACTION_DETAILS_MENU + 1):
                             raise ValueError
@@ -98,29 +102,37 @@ class ValidateUserInput:
                     amount = input("> ").strip().lower()
             return True, amount
         if kind == "expense":
-            ignore_negative_balance = False
-            initial_amount = amount
+            causing_negative_balance = False
+            initial_amount = ""
             while True:
                 if amount == "cancel":
                     return False, amount
-                if amount == "ok":
-                    ignore_negative_balance = True
+                if amount == "" and causing_negative_balance:
                     amount = initial_amount
                 try:
                     amount = float(amount)
                     if amount <= 0:
                         raise ValueError
-                    if amount > account.check_balance() and not ignore_negative_balance:
-                        raise InsufficientFundsError
+                    if amount > account.check_balance():
+                        if not causing_negative_balance:
+                            raise InsufficientFundsError
+                        else:
+                            causing_negative_balance = False
                     break
                 except InsufficientFundsError:
                     fmt.load_viewer(data=messages["insufficient_funds"], kind="warning")
                     fmt.load_viewer(data=messages["insufficient_funds_continue"], kind="warning")
+                    causing_negative_balance = True
+                    initial_amount = amount
                     amount = input("> ").strip().lower()
                 except ValueError:
                     fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
             return True, amount
+
+    @staticmethod
+    def is_updated_amount_valid(account: "Account", transaction: "Transaction", amount: str):
+        pass
 
     @staticmethod
     def is_date_valid(year=None, month=None, day=None) -> bool:
