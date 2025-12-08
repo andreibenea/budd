@@ -1,5 +1,5 @@
 from datetime import datetime
-from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MONTHS, MAIN_MENU_OPTIONS, \
+from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MAIN_MENU_OPTIONS, \
     TRANSACTIONS_HISTORY_MENU, \
     TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
@@ -11,6 +11,8 @@ from utils.exceptions import InsufficientFundsError
 from utils.formatters import Formatter as fmt
 from models.account import Account
 from models.transaction import Transaction
+
+import re
 
 
 class ValidateUserInput:
@@ -160,30 +162,39 @@ class ValidateUserInput:
         return True, description
 
     @staticmethod
-    def is_date_valid(year=None, month=None, day=None) -> bool:
-        try:
-            if year is not None:
-                try:
-                    year = int(year)
-                    if year not in ValidateUserInput.YEARS:
-                        raise ValueError
-                except ValueError:
-                    raise ValueError
-            if month is not None:
-                try:
-                    month = int(month)
-                    if month not in range(1, 13):
-                        raise ValueError
-                except ValueError:
-                    if month not in MONTHS:
-                        raise ValueError
-            if day is not None:
-                try:
-                    day = int(day)
-                    if day not in range(1, 32):
-                        raise ValueError
-                except ValueError:
-                    raise ValueError
-            return True
-        except ValueError:
-            return False
+    def is_date_valid(date: str):
+        date_sub_pattern = r'[\\ /:]'
+        if not date:
+            return False, date
+        while True:
+            if date == "cancel":
+                return False, date
+            try:
+                normalized = re.sub(pattern=date_sub_pattern, repl='-', string=date)
+                dt = datetime.strptime(normalized, "%Y-%m-%d")
+                date = normalized
+                break
+            except ValueError:
+                fmt.load_viewer(data=messages["invalid_date"], kind="warning")
+                date = input("> ").strip().lower()
+        return True, date
+
+    @staticmethod
+    def is_time_valid(time_input: str):
+        time_sub_pattern = r'[\\ /-]'
+        if not time_input:
+            return False, time_input
+        while True:
+            if time_input == "cancel":
+                return False, time_input
+            try:
+                normalized = re.sub(pattern=time_sub_pattern, repl=':', string=time_input)
+                if len(normalized) == 5:
+                    normalized += ":00"
+                dt = datetime.strptime(normalized, "%H:%M:%S")
+                time_input = normalized
+                break
+            except ValueError:
+                fmt.load_viewer(data=messages["invalid_time"], kind="warning")
+                time_input = input("> ").strip().lower()
+        return True, time_input

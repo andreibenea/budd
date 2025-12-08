@@ -35,6 +35,15 @@ def load_menu(user_view, filters: dict | None = None, transaction=None):
             fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Expenses]",
                             kind="path_to_view")
             show_categories_expenses_menu_new()
+        case "transactions_history_filter_datetime_menu":
+            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > [Date & Time]",
+                            kind="path_to_view")
+            show_transactions_history_filter_datetime_menu()
+        case "transactions_history_filter_datetime_quick_menu":
+            fmt.load_viewer(
+                data="You Are Here:\nMain Menu > Transactions > Manage Filters > Date & Time > [Quick Filters]",
+                kind="path_to_view")
+            show_transactions_history_filter_datetime_quick_menu()
         case "transaction_selected_menu":
             fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Selected Transaction]",
                             kind="path_to_view")
@@ -98,6 +107,16 @@ def show_transactions_history_filter_menu():
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
+def show_transactions_history_filter_datetime_menu():
+    for msg in menus["transactions_history_filter_datetime_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transactions_history_filter_datetime_quick_menu():
+    for msg in menus["transactions_history_filter_datetime_quick_menu"]:
+        fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
 def show_transactions_history_filter_categories_menu():
     for msg in menus["transactions_history_filter_categories_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
@@ -113,6 +132,26 @@ def show_categories_expenses_menu_new():
     """Displays all income categories available for menu selection"""
     for msg in menus["transactions_history_filter_categories_expenses_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def add_timestamp_filter(filters: dict, start, end, mode: str | None = None):
+    date_filters = []
+    new_entry = {}
+    try:
+        if filters["timestamp"]:
+            pass
+    except KeyError:
+        filters["timestamp"] = []
+    for entry in filters["timestamp"]:
+        date_filters.append(entry)
+    if mode == "date":
+        new_entry["date"] = (start, end)
+        date_filters.append(new_entry)
+    elif mode == "time":
+        new_entry["time"] = (start, end)
+        date_filters.append(new_entry)
+    filters["timestamp"] = date_filters
+    return filters
 
 
 def toggle_filter(filters, sub_category, kind: str | None = None):
@@ -141,11 +180,17 @@ def toggle_filter(filters, sub_category, kind: str | None = None):
 
 
 messages = {
+    "add_date": "Type in the date (YYYY-MM-DD / YYYY MM DD) or type 'cancel' to abort.",
+    "add_date_end": "Type in the end date. Press Enter/Return to continue\nor type 'cancel' to abort.",
+    "add_time": "Type in the time (HH:MM:SS / HH:MM) or type 'cancel' to abort.",
+    "add_time_end": "Type in the end time. Press Enter/Return to continue\nor type 'cancel' to abort.",
     "insert_amount": "Type in the desired amount.",
     "insert_description": "Type in the desired description, or type in 'cancel' to abort.",
     "insufficient_funds": "Adding this expense will cause balance to be negative!",
     "insufficient_funds_continue": "Press Enter/Return to continue, insert a smaller amount or type 'cancel' to abort",
     "invalid_amount": "Amount invalid! Try again or type in 'cancel' to abort.",
+    "invalid_date": "Date invalid! Accepted format is YYYY-MM-DD or YYYY MM DD.\nType 'cancel' to abort.",
+    "invalid_time": "Time invalid! Accepted format is HH:MM:DD or HH:MM.\nType 'cancel' to abort.",
     "invalid_description": "Desired description is too long! Try again or type in 'cancel' to abort.",
     "cancel": "Type in 'cancel' if you'd like to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
@@ -219,20 +264,20 @@ menus = {
     # Enter Date(s) {Go back, Choose Month,
     "transactions_history_filter_datetime_menu": [
         ("What do you want to do?", "menu_question_main"),
-        ("1. Go back", "menu_option"),
+        ("1. Back to manage filters", "menu_option"),
         ("2. Quick Filters", "menu_option"),
         ("3. Enter Date(s)", "menu_option"),
-        ("4. Enter Time(s)", "menu_option"),
+        ("4. Enter Timeframe", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "transactions_history_filter_datetime_quick_menu": [
         ("What do you want to do?", "menu_question_main"),
-        ("1. Go back", "menu_option"),
+        ("1. Back to date filters", "menu_option"),
         ("2. Today", "menu_option"),
         ("3. Last 7 Days", "menu_option"),
         ("4. Last 30 Days", "menu_option"),
-        ("5. Choose month", "menu_option"),
-        ("6. Choose year", "menu_option"),
+        ("5. Choose month(s)", "menu_option"),
+        ("6. Choose year(s)", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "transaction_selected_menu": [
@@ -304,6 +349,8 @@ USER_VIEWS = {
     "transactions_history_filter_categories_incomes_menu": "transactions_history_filter_categories_incomes_menu",
     "transactions_history_filter_categories_expenses_menu": "transactions_history_filter_categories_expenses_menu",
     "transactions_history_filter_datetime_menu": "transactions_history_filter_datetime_menu",
+    "transactions_history_filter_datetime_date_menu": "transactions_history_filter_datetime_date_menu",
+    "transactions_history_filter_datetime_time_menu": "transactions_history_filter_datetime_time_menu",
     "transactions_history_filter_datetime_quick_menu": "transactions_history_filter_datetime_quick_menu",
     "transactions_history_filter_datetime_timeframe_menu": "transactions_history_filter_datetime_timeframe_menu",
     "transactions_history_selection": "transactions_history_selection",

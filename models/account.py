@@ -88,6 +88,18 @@ class Account:
                             elif filters_copy[flt][cat] == transaction.__dict__[flt]:
                                 if transaction not in filtered_transactions:
                                     filtered_transactions.append(transaction)
+                    elif flt == "timestamp":
+                        for entry in filters_copy[flt]:
+                            transaction_ts = datetime.fromisoformat(transaction.timestamp)
+                            if "date" in entry:
+                                if entry["date"][0] <= transaction_ts <= entry["date"][1]:
+                                    if transaction not in filtered_transactions:
+                                        filtered_transactions.append(transaction)
+                            elif "time" in entry:
+                                if entry["time"][0].hour <= transaction_ts.hour <= entry["time"][1].hour:
+                                    if entry["time"][0].minute <= transaction_ts.minute <= entry["time"][1].minute:
+                                        if transaction not in filtered_transactions:
+                                            filtered_transactions.append(transaction)
                     elif transaction.__dict__[flt] == filters_copy[flt]:
                         if transaction not in filtered_transactions:
                             filtered_transactions.append(transaction)

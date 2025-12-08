@@ -2,7 +2,8 @@
 import sys
 from models.account import Account
 from models.transaction import Transaction
-from utils.utils import load_menu, toggle_filter, messages, menus, ascii_art, CATEGORIES_EXPENSES, CATEGORIES_INCOME, \
+from utils.utils import load_menu, add_timestamp_filter, toggle_filter, messages, menus, ascii_art, CATEGORIES_EXPENSES, \
+    CATEGORIES_INCOME, \
     USER_VIEWS, \
     MAIN_MENU_OPTIONS, TRANSACTIONS_HISTORY_MENU, TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
@@ -61,6 +62,18 @@ def main_loop():
                 user_view, filters, editing = loop_transactions_history_filter_categories_expenses_menu(user_view,
                                                                                                         filters,
                                                                                                         editing)
+            case "transactions_history_filter_datetime_menu":
+                user_view, filters, editing = loop_transactions_history_filter_datetime_menu(user_view, filters,
+                                                                                             editing)
+            case "transactions_history_filter_datetime_date_menu":
+                user_view, filters, editing = loop_transactions_history_filter_datetime_date_menu(user_view, filters,
+                                                                                                  editing)
+            case "transactions_history_filter_datetime_time_menu":
+                user_view, filters, editing = loop_transactions_history_filter_datetime_time_menu(user_view, filters,
+                                                                                                  editing)
+            case "transactions_history_filter_datetime_quick_menu":
+                user_view, filters, editing = loop_transactions_history_filter_datetime_quick_menu(user_view, filters,
+                                                                                                   editing)
 
 
 def loop_main_menu(user_view, filters, editing):
@@ -142,7 +155,7 @@ def loop_transactions_history_filter_menu(user_view, filters, editing):
                     user_view = USER_VIEWS["transactions_history_filter_categories_menu"]
             case 4:
                 """Date: [Current: All years]"""
-                fmt.load_viewer(data="Not YET implemented!", kind="warning")
+                user_view = USER_VIEWS["transactions_history_filter_datetime_menu"]
             case 5:
                 """Clear all filters"""
                 filters = {}
@@ -259,6 +272,104 @@ def loop_transactions_history_filter_categories_expenses_menu(user_view, filters
                         del filters["category"]
                 except KeyError:
                     pass
+    return user_view, filters, editing
+
+
+def loop_transactions_history_filter_datetime_menu(user_view, filters, editing):
+    filtered_transactions = acc.filter_transactions(acc.get_transactions(), filters)
+    fmt.load_viewer(data=filtered_transactions, kind="transactions_list")
+    load_menu(user_view)
+    user_input = input("> ").strip().lower()
+    is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
+    if is_valid:
+        match int(user_input):
+            case 1:
+                """Back to manage filters menu"""
+                user_view = USER_VIEWS["transactions_history_filter_menu"]
+            case 2:
+                """Load quick filters menu"""
+                user_view = USER_VIEWS["transactions_history_filter_datetime_quick_menu"]
+            case 3:
+                """Add individual dates to filters"""
+                user_view = USER_VIEWS["transactions_history_filter_datetime_date_menu"]
+            case 4:
+                """Add individual timeframes to filters"""
+                user_view = USER_VIEWS["transactions_history_filter_datetime_time_menu"]
+    return user_view, filters, editing
+
+
+def loop_transactions_history_filter_datetime_date_menu(user_view, filters, editing):
+    start_date = None
+    end_date = None
+    filtered_transactions = acc.filter_transactions(acc.get_transactions(), filters)
+    fmt.load_viewer(data=filtered_transactions, kind="transactions_list")
+    fmt.load_viewer(data=messages["add_date"], kind="menu_question_main")
+    user_input = input("> ").strip().lower()
+    is_start_date_valid, user_input = validator.is_date_valid(date=user_input)
+    if is_start_date_valid:
+        start_date = datetime.fromisoformat(user_input)
+        fmt.load_viewer(data=messages["add_date_end"], kind="menu_question_main")
+        user_input = input("> ").strip().lower()
+        is_end_date_valid, user_input = validator.is_date_valid(date=user_input)
+        if is_end_date_valid:
+            end_date = datetime.fromisoformat(user_input)
+        else:
+            end_date = start_date + timedelta(hours=24)
+    if start_date and end_date:
+        filters = add_timestamp_filter(filters, start_date, end_date, "date")
+    user_view = USER_VIEWS["transactions_history_filter_datetime_menu"]
+    return user_view, filters, editing
+
+
+def loop_transactions_history_filter_datetime_time_menu(user_view, filters, editing):
+    start_time = None
+    end_time = None
+    filtered_transactions = acc.filter_transactions(acc.get_transactions(), filters)
+    fmt.load_viewer(data=filtered_transactions, kind="transactions_list")
+    fmt.load_viewer(data=messages["add_time"], kind="menu_question_main")
+    user_input = input("> ").strip().lower()
+    is_time_valid, user_input = validator.is_time_valid(time_input=user_input)
+    if is_time_valid:
+        start_time = datetime.fromisoformat(f"1900-01-01T{user_input}")
+        fmt.load_viewer(data=messages["add_time_end"], kind="menu_question_main")
+        user_input = input("> ").strip().lower()
+        is_end_time_valid, user_input = validator.is_time_valid(time_input=user_input)
+        if is_end_time_valid:
+            end_time = datetime.fromisoformat(f"1900-01-01T{user_input}")
+        else:
+            end_time = start_time + timedelta(minutes=1)
+    if start_time and end_time:
+        filters = add_timestamp_filter(filters, start_time, end_time, "time")
+    user_view = USER_VIEWS["transactions_history_filter_datetime_menu"]
+    return user_view, filters, editing
+
+
+def loop_transactions_history_filter_datetime_quick_menu(user_view, filters, editing):
+    filtered_transactions = acc.filter_transactions(acc.get_transactions(), filters)
+    fmt.load_viewer(data=filtered_transactions, kind="transactions_list")
+    load_menu(user_view)
+    user_input = input("> ").strip().lower()
+    is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
+    if is_valid:
+        match int(user_input):
+            case 1:
+                """Back to datetime filters menu"""
+                user_view = USER_VIEWS["transactions_history_filter_datetime_menu"]
+            case 2:
+                """Today"""
+                pass
+            case 3:
+                """Last 7 Days"""
+                pass
+            case 4:
+                """Last 30 Days"""
+                pass
+            case 5:
+                """Choose month(s)"""
+                pass
+            case 6:
+                """Choose year(s)"""
+                pass
     return user_view, filters, editing
 
 
@@ -507,91 +618,91 @@ def load_selected_year(filter_set, year):
         return fmt.load_viewer(data=yearly_transactions, kind="transactions_list")
 
 
-def load_timeframe(set_filter):
-    transactions = get_transactions_filtered(filter_set=set_filter)
-    selected_transactions = []
-    start_date = create_date()
-    end_date = create_date(is_end_date=True)
-    print(start_date)
-    print(end_date)
-    for transaction in transactions:
-        dt_timestamp = datetime.fromisoformat(transaction.timestamp)
-        if start_date <= dt_timestamp <= end_date:
-            selected_transactions.append(transaction)
-    if not selected_transactions:
-        return fmt.load_viewer(data="No transactions found!", kind="warning")
-    fmt.load_viewer(data=selected_transactions, kind="transactions_list")
+# def load_timeframe(set_filter):
+#     transactions = get_transactions_filtered(filter_set=set_filter)
+#     selected_transactions = []
+#     start_date = create_date()
+#     end_date = create_date(is_end_date=True)
+#     print(start_date)
+#     print(end_date)
+#     for transaction in transactions:
+#         dt_timestamp = datetime.fromisoformat(transaction.timestamp)
+#         if start_date <= dt_timestamp <= end_date:
+#             selected_transactions.append(transaction)
+#     if not selected_transactions:
+#         return fmt.load_viewer(data="No transactions found!", kind="warning")
+#     fmt.load_viewer(data=selected_transactions, kind="transactions_list")
 
 
-def create_date(is_end_date: bool = False):
-    if is_end_date:
-        fmt.load_viewer(
-            data="Type in year (e.g. '1970', '2025').\nor leave empty for current year\nOr type 'cancel' to abort.",
-            kind="menu_question_main")
-    else:
-        fmt.load_viewer(data="Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
-                        kind="menu_question_main")
-    year_input = input("> ").strip().lower()
-    while True:
-        if year_input == "cancel":
-            return
-        if not is_end_date:
-            if year_input:
-                break
-            fmt.load_viewer(data="You need a starting year.\nType one in or type 'cancel' to abort.", kind="warning")
-            year_input = input("> ").strip().lower()
-        else:
-            break
-    fmt.load_viewer(
-        data="Type in month (e.g. '1' or 'January')\nLeave empty if not needed\nOr type 'cancel' to abort.",
-        kind="menu_question_main")
-    month_input = input("> ").strip().lower()
-    if month_input == "cancel":
-        return
-    fmt.load_viewer(
-        data="Type in day (e.g. '1', '11', '31').\nleave empty if not needed\nOr type 'cancel' to abort.",
-        kind="menu_question_main")
-    day_input = input("> ").strip().lower()
-    if day_input == "cancel":
-        return
-    while True:
-        invalid_inputs = []
-        if year_input:
-            if not validator.is_date_valid(year=year_input):
-                invalid_inputs.append(year_input)
-        if month_input:
-            if not validator.is_date_valid(month=month_input):
-                invalid_inputs.append(month_input)
-        if day_input:
-            if not validator.is_date_valid(day=day_input):
-                invalid_inputs.append(day_input)
-        if not invalid_inputs:
-            break
-        if year_input in invalid_inputs:
-            fmt.load_viewer(data="Type in a valid year", kind="warning")
-            year_input = input("> ").strip().lower()
-        if month_input in invalid_inputs:
-            fmt.load_viewer(data="Type in a valid month", kind="warning")
-            month_input = input("> ").strip().lower()
-        if day_input in invalid_inputs:
-            fmt.load_viewer(data="Type in a valid day", kind="warning")
-            day_input = input("> ").strip().lower()
-    print(f"[DEBUG] {year_input}, {month_input}, {day_input}")
-    if year_input is None or year_input == "":
-        year_input = datetime.now().year
-    if month_input is None or month_input == "":
-        month_input = "01" if not is_end_date else str(datetime.now().month)
-    if len(month_input) == 1:
-        month_input = "0" + month_input
-    if month_input in MONTHS:
-        month_input = MONTHS[month_input]
-    if day_input is None or day_input == "":
-        day_input = "01" if not is_end_date else str(datetime.now().day)
-    if len(day_input) == 1:
-        day_input = "0" + day_input
-    date_string = f"{year_input}-{month_input}-{day_input}"
-    dt = datetime.fromisoformat(date_string)
-    return dt
+# def create_date(is_end_date: bool = False):
+#     if is_end_date:
+#         fmt.load_viewer(
+#             data="Type in year (e.g. '1970', '2025').\nor leave empty for current year\nOr type 'cancel' to abort.",
+#             kind="menu_question_main")
+#     else:
+#         fmt.load_viewer(data="Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
+#                         kind="menu_question_main")
+#     year_input = input("> ").strip().lower()
+#     while True:
+#         if year_input == "cancel":
+#             return
+#         if not is_end_date:
+#             if year_input:
+#                 break
+#             fmt.load_viewer(data="You need a starting year.\nType one in or type 'cancel' to abort.", kind="warning")
+#             year_input = input("> ").strip().lower()
+#         else:
+#             break
+#     fmt.load_viewer(
+#         data="Type in month (e.g. '1' or 'January')\nLeave empty if not needed\nOr type 'cancel' to abort.",
+#         kind="menu_question_main")
+#     month_input = input("> ").strip().lower()
+#     if month_input == "cancel":
+#         return
+#     fmt.load_viewer(
+#         data="Type in day (e.g. '1', '11', '31').\nleave empty if not needed\nOr type 'cancel' to abort.",
+#         kind="menu_question_main")
+#     day_input = input("> ").strip().lower()
+#     if day_input == "cancel":
+#         return
+#     while True:
+#         invalid_inputs = []
+#         if year_input:
+#             if not validator.is_date_valid(year=year_input):
+#                 invalid_inputs.append(year_input)
+#         if month_input:
+#             if not validator.is_date_valid(month=month_input):
+#                 invalid_inputs.append(month_input)
+#         if day_input:
+#             if not validator.is_date_valid(day=day_input):
+#                 invalid_inputs.append(day_input)
+#         if not invalid_inputs:
+#             break
+#         if year_input in invalid_inputs:
+#             fmt.load_viewer(data="Type in a valid year", kind="warning")
+#             year_input = input("> ").strip().lower()
+#         if month_input in invalid_inputs:
+#             fmt.load_viewer(data="Type in a valid month", kind="warning")
+#             month_input = input("> ").strip().lower()
+#         if day_input in invalid_inputs:
+#             fmt.load_viewer(data="Type in a valid day", kind="warning")
+#             day_input = input("> ").strip().lower()
+#     print(f"[DEBUG] {year_input}, {month_input}, {day_input}")
+#     if year_input is None or year_input == "":
+#         year_input = datetime.now().year
+#     if month_input is None or month_input == "":
+#         month_input = "01" if not is_end_date else str(datetime.now().month)
+#     if len(month_input) == 1:
+#         month_input = "0" + month_input
+#     if month_input in MONTHS:
+#         month_input = MONTHS[month_input]
+#     if day_input is None or day_input == "":
+#         day_input = "01" if not is_end_date else str(datetime.now().day)
+#     if len(day_input) == 1:
+#         day_input = "0" + day_input
+#     date_string = f"{year_input}-{month_input}-{day_input}"
+#     dt = datetime.fromisoformat(date_string)
+#     return dt
 
 
 def handle_command(user_view: str | None = None, set_filter: str | None = None, timeframe: bool = False,
@@ -870,7 +981,7 @@ def handle_command(user_view: str | None = None, set_filter: str | None = None, 
                                           set_filter=set_filter)
                 case 3:
                     """Implement date (period) selection"""
-                    load_timeframe(set_filter)
+                    # load_timeframe(set_filter)
                     return handle_command(
                         user_view=USER_VIEWS["transactions_history_filter_datetime_menu"],
                         set_filter=set_filter, timeframe=True)
