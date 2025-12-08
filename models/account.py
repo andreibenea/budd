@@ -13,6 +13,10 @@ class Account:
 
     def get_transactions(self):
         transactions = self.order_transactions(self._transactions)
+        i = 1
+        for transaction in transactions:
+            transaction.set_index(i)
+            i += 1
         self._transactions = transactions
         return self._transactions
 

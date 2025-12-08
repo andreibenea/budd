@@ -20,3 +20,6 @@ class Transaction:
 
     def __repr__(self):
         return f'<Transaction: {self.identifier} : {self.amount} ; {self.kind} ; {self.description} ; {self.category}>'
+
+    def set_index(self, index: int):
+        self.index = index
