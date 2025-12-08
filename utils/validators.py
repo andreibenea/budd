@@ -87,7 +87,8 @@ class ValidateUserInput:
         return True, choice
 
     @staticmethod
-    def is_amount_valid(account: "Account", amount: str, kind: str):
+    def is_amount_valid(account: "Account", amount: str, kind: str | None = None,
+                        transaction: "Transaction | None" = None):
         if kind == "income":
             while True:
                 if amount == "cancel":
@@ -100,6 +101,9 @@ class ValidateUserInput:
                 except ValueError:
                     fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
+            if transaction:
+                """Editing transaction below"""
+                pass
             return True, amount
         if kind == "expense":
             causing_negative_balance = False
@@ -113,11 +117,20 @@ class ValidateUserInput:
                     amount = float(amount)
                     if amount <= 0:
                         raise ValueError
-                    if amount > account.check_balance():
-                        if not causing_negative_balance:
-                            raise InsufficientFundsError
-                        else:
-                            causing_negative_balance = False
+                    if not transaction:
+                        if amount > account.check_balance():
+                            if not causing_negative_balance:
+                                raise InsufficientFundsError
+                            else:
+                                causing_negative_balance = False
+                    else:
+                        if amount >= transaction.amount:
+                            diff = amount - transaction.amount
+                            if account.check_balance() - diff < 0:
+                                if not causing_negative_balance:
+                                    raise InsufficientFundsError
+                                else:
+                                    causing_negative_balance = False
                     break
                 except InsufficientFundsError:
                     fmt.load_viewer(data=messages["insufficient_funds"], kind="warning")
@@ -129,10 +142,6 @@ class ValidateUserInput:
                     fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
             return True, amount
-
-    @staticmethod
-    def is_updated_amount_valid(account: "Account", transaction: "Transaction", amount: str):
-        pass
 
     @staticmethod
     def is_date_valid(year=None, month=None, day=None) -> bool:
