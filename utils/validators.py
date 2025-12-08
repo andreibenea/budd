@@ -4,7 +4,8 @@ from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MONTHS
     TRANSACTIONS_HISTORY_FILTER_MENU, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
     TRANSACTION_SELECTED_MENU, TRANSACTION_SELECTED_DELETE_MENU, \
-    TRANSACTION_DETAILS_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU, \
+    TRANSACTION_DETAILS_MENU, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU, TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU, \
+    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU, \
     TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU
 from utils.exceptions import InsufficientFundsError
 from utils.formatters import Formatter as fmt
@@ -61,6 +62,13 @@ class ValidateUserInput:
                     case "transaction_details_menu":
                         if choice not in range(1, TRANSACTION_DETAILS_MENU + 1):
                             raise ValueError
+                    case "transaction_details_category_menu":
+                        if kind == "income":
+                            if choice not in range(1, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU + 1):
+                                raise ValueError
+                        elif kind == "expense":
+                            if choice not in range(1, TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU + 1):
+                                raise ValueError
                     case "add_income":
                         if choice not in range(1, len(CATEGORIES_INCOME) + 1):
                             raise ValueError
@@ -72,7 +80,7 @@ class ValidateUserInput:
                 fmt.load_viewer(data="Type in number corresponding to your choice\nOr type 'cancel' to abort.",
                                 kind="warning")
                 choice = input("> ").strip().lower()
-        if kind:
+        if kind and user_view != "transaction_details_category_menu":
             i = 1
             if kind == "income":
                 for cat in CATEGORIES_INCOME:
@@ -101,9 +109,6 @@ class ValidateUserInput:
                 except ValueError:
                     fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
-            if transaction:
-                """Editing transaction below"""
-                pass
             return True, amount
         if kind == "expense":
             causing_negative_balance = False
@@ -142,6 +147,17 @@ class ValidateUserInput:
                     fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
             return True, amount
+
+    @staticmethod
+    def is_description_valid(description: str):
+        while True:
+            if description == "cancel":
+                return False, description
+            if len(description) > 50:
+                fmt.load_viewer(data=messages["invalid_description"], kind="warning")
+                description = input("> ").strip().lower()
+            break
+        return True, description
 
     @staticmethod
     def is_date_valid(year=None, month=None, day=None) -> bool:

@@ -43,6 +43,8 @@ def main_loop():
                 user_view, filters, editing = loop_transaction_selected_menu(user_view, filters, editing)
             case "transaction_details_menu":
                 user_view, filters, editing = loop_transactions_details_menu(user_view, filters, editing)
+            case "transaction_details_category_menu":
+                user_view, filters, editing = loop_transaction_details_category_menu(user_view, filters, editing)
             case "transactions_history_menu":
                 """Starts up transactions history menu"""
                 user_view, filters, editing = loop_transactions_history_menu(user_view, filters, editing)
@@ -282,7 +284,7 @@ def loop_transaction_selected_menu(user_view, filters, editing):
                     match int(user_input):
                         case 1:
                             """Back to selected transaction"""
-                            return editing
+                            return user_view, filters, editing
                         case 2:
                             """Delete selected transaction"""
                             acc.delete_transaction(editing)
@@ -318,10 +320,46 @@ def loop_transactions_details_menu(user_view, filters, editing):
                     fmt.load_viewer(data=messages["successful_transaction_update"], kind="success")
             case 3:
                 """Change transaction type"""
+                editing.temp_kind = "income" if editing.kind == "income" else "expense"
+                acc.edit_transaction(transaction=editing, change_type="kind",
+                                     value="expense" if editing.kind == "income" else "income")
+                user_view = USER_VIEWS["transaction_details_category_menu"]
             case 4:
                 """Edit transaction category"""
+                user_view = USER_VIEWS["transaction_details_category_menu"]
             case 5:
                 """Edit transaction description"""
+                fmt.load_viewer(data=messages["insert_description"], kind="menu_question_main")
+                user_input = input("> ").strip().lower()
+                is_valid, user_input = validator.is_description_valid(description=user_input)
+                if is_valid:
+                    acc.edit_transaction(transaction=editing, change_type="description", value=user_input)
+                    fh.save_account(account=acc)
+                    fmt.load_viewer(data=messages["successful_transaction_update"], kind="success")
+    return user_view, filters, editing
+
+
+def loop_transaction_details_category_menu(user_view, filters, editing):
+    fmt.load_viewer(data=[editing], kind="transaction_details")
+    load_menu(user_view=user_view, transaction=editing)
+    user_input = input("> ").strip().lower()
+    is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view, kind=editing.kind)
+    if is_valid:
+        match int(user_input):
+            case 1:
+                """Back to transaction details menu"""
+                try:
+                    if editing.temp_kind:
+                        editing.kind = editing.temp_kind
+                        del editing.temp_kind
+                except AttributeError:
+                    pass
+            case _:
+                """Change to new selected category"""
+                acc.edit_transaction(transaction=editing, change_type="category", value=user_input - 1)
+                fh.save_account(account=acc)
+                fmt.load_viewer(data=messages["successful_transaction_update"], kind="success")
+    user_view = USER_VIEWS["transaction_details_menu"]
     return user_view, filters, editing
 
 
@@ -375,26 +413,21 @@ def select_transaction(transactions):
     selected_index = input("> ").strip().lower()
     available_indexes = []
     for transaction in transactions:
-        print(f"[DEBUG] tr_idx: {transaction.index}")
         available_indexes.append(transaction.index)
     available_indexes.sort()
-    print(available_indexes)
     while True:
         if selected_index == "cancel":
             return None
         try:
             selected_index = int(selected_index)
             if selected_index not in available_indexes:
-                print(f"[DEBUG] Selected index not in available transactions!")
                 raise ValueError
             break
         except ValueError:
             fmt.load_viewer(data=messages["select_option"], kind="warning")
             selected_index = input("> ").strip().lower()
     for transaction in transactions:
-        print(f"[DEBUG] tr_idx: <{transaction.index}> VS. selected_idx: <{selected_index}>")
         if selected_index == transaction.index:
-            print(f"[DEBUG] selection result: {transaction}")
             return transaction
     return None
 

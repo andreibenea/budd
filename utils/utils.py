@@ -3,7 +3,7 @@ from utils.formatters import Formatter
 fmt = Formatter()
 
 
-def load_menu(user_view, filters: dict | None = None):
+def load_menu(user_view, filters: dict | None = None, transaction=None):
     match user_view:
         case "main_menu":
             fmt.load_viewer(data="You Are Here:\n[Main Menu]", kind="path_to_view")
@@ -48,6 +48,11 @@ def load_menu(user_view, filters: dict | None = None):
                 data="You Are Here:\nMain Menu > Transactions > Selected Transaction > [Transaction Details]",
                 kind="path_to_view")
             show_transaction_details_menu()
+        case "transaction_details_category_menu":
+            fmt.load_viewer(
+                data="You Are Here:\nMain Menu > Transactions > Selected Transaction > Transaction Details > [Categories]",
+                kind="path_to_view")
+            show_transaction_details_category_menu(transaction)
 
 
 def show_main_menu():
@@ -71,6 +76,15 @@ def show_transaction_details_menu():
     """Displays transaction detail modification options"""
     for msg in menus["transaction_details_menu"]:
         fmt.load_viewer(data=msg[0], kind=msg[1])
+
+
+def show_transaction_details_category_menu(transaction):
+    if transaction.kind == "income":
+        for msg in menus["transaction_details_category_incomes_menu"]:
+            fmt.load_viewer(data=msg[0], kind=msg[1])
+    elif transaction.kind == "expense":
+        for msg in menus["transaction_details_category_expenses_menu"]:
+            fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
 def show_transactions_history_menu():
@@ -128,9 +142,11 @@ def toggle_filter(filters, sub_category, kind: str | None = None):
 
 messages = {
     "insert_amount": "Type in the desired amount.",
+    "insert_description": "Type in the desired description, or type in 'cancel' to abort.",
     "insufficient_funds": "Adding this expense will cause balance to be negative!",
     "insufficient_funds_continue": "Press Enter/Return to continue, insert a smaller amount or type 'cancel' to abort",
     "invalid_amount": "Amount invalid! Try again or type in 'cancel' to abort.",
+    "invalid_description": "Desired description is too long! Try again or type in 'cancel' to abort.",
     "cancel": "Type in 'cancel' if you'd like to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
     "select_month": "Type in month number (1-12) or name (e.g., January)\nOr type 'cancel' to abort.",
@@ -138,7 +154,7 @@ messages = {
     "select_transaction": "Select a transaction by typing in its 'Index'\nOr type 'cancel' to abort.",
     "successful_transaction": "Transaction saved successfully!",
     "successful_transaction_update": "Transaction updated successfully!",
-    "successful_transaction_deleted" : "Transaction deleted successfully!",
+    "successful_transaction_deleted": "Transaction deleted successfully!",
 }
 
 menus = {
@@ -239,6 +255,31 @@ menus = {
         ("5. Edit transaction description", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
+    "transaction_details_category_incomes_menu": [
+        ("Choose the new category", "menu_question_main"),
+        ("1. Back to selected transaction", "menu_option"),
+        ("2. Salary", "menu_option"),
+        ("3. Freelance", "menu_option"),
+        ("4. Business", "menu_option"),
+        ("5. Investment", "menu_option"),
+        ("6. Gift", "menu_option"),
+        ("7. Refund", "menu_option"),
+        ("8. Other", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
+    "transaction_details_category_expenses_menu": [
+        ("Choose the new category", "menu_question_main"),
+        ("1. Back to selected transaction", "menu_option"),
+        ("2. Food & Dining", "menu_option"),
+        ("3. Housing", "menu_option"),
+        ("4. Transportation", "menu_option"),
+        ("5. Entertainment", "menu_option"),
+        ("6. Shopping", "menu_option"),
+        ("7. Healthcare", "menu_option"),
+        ("8. Utilities", "menu_option"),
+        ("9. Other", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
 }
 
 ascii_art = {
@@ -255,6 +296,7 @@ USER_VIEWS = {
     "add_income": "add_income",
     "add_expense": "add_expense",
     "transaction_details_menu": "transaction_details_menu",
+    "transaction_details_category_menu": "transaction_details_category_menu",
     "transaction_selected_menu": "transaction_selected_menu",
     "transactions_history_menu": "transactions_history_menu",
     "transactions_history_filter_menu": "transactions_history_filter_menu",
@@ -293,6 +335,8 @@ TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU = 6
 TRANSACTION_SELECTED_MENU = 3
 TRANSACTION_SELECTED_DELETE_MENU = 2
 TRANSACTION_DETAILS_MENU = 5
+TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU = 8
+TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU = 9
 
 CATEGORIES_EXPENSES = {
     "food_and_dining": "Food & Dining",
