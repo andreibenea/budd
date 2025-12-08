@@ -134,6 +134,22 @@ def show_categories_expenses_menu_new():
         fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
+def show_categories_income_menu():
+    """Displays all income categories available for menu selection"""
+    i = 1
+    for category in CATEGORIES_INCOME:
+        fmt.load_viewer(data=f"{i}. {CATEGORIES_INCOME[category]}", kind="menu_option")
+        i += 1
+
+
+def show_categories_expenses_menu():
+    """Displays all expenses categories available for menu selection"""
+    i = 1
+    for category in CATEGORIES_EXPENSES:
+        fmt.load_viewer(data=f"{i}. {CATEGORIES_EXPENSES[category]}", kind="menu_option")
+        i += 1
+
+
 def add_timestamp_filter(filters: dict, start, end, mode: str | None = None):
     date_filters = []
     new_entry = {}
@@ -262,8 +278,6 @@ menus = {
         ("9. Set filter: Other", "menu_option"),
         ("10. Clear all category filters", "menu_option"),
     ],
-    # Go back, Quick Filters {Go back, Today, Last 7 Days, Last 30 Days},
-    # Enter Date(s) {Go back, Choose Month,
     "transactions_history_filter_datetime_menu": [
         ("What do you want to do?", "menu_question_main"),
         ("1. Back to manage filters", "menu_option"),
