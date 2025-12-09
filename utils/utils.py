@@ -7,6 +7,8 @@ class UserView:
     MAIN_MENU = "main_menu"
     BUDGETS_MENU = "budgets_menu"
     BUDGETS_BUDGET_DETAILS_MENU = "budgets_budget_details_menu"
+    BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU = "budgets_budget_category_details_menu"
+    BUDGETS_BUDGET_CATEGORIES_MENU = "budgets_budget_categories_menu"
     ADD_INCOME_MENU = "add_income_menu"
     ADD_EXPENSE_MENU = "add_expense_menu"
     TRANSACTION_DETAILS_MENU = "transaction_details_menu"
@@ -25,9 +27,11 @@ class UserView:
     TRANSACTIONS_HISTORY_SELECTION_MENU = "transactions_history_selection_menu"
 
 
-MAIN_MENU_OPT = 5
+MAIN_MENU_OPT = 6
 BUDGETS_MENU_OPT = 3
-BUDGETS_BUDGET_DETAILS_OPT = 5
+BUDGETS_BUDGET_DETAILS_MENU_OPT = 5
+BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU_OPT = 3
+BUDGETS_BUDGET_CATEGORIES_MENU_OPT = 14
 TRANSACTIONS_HISTORY_MENU_OPT = 3
 TRANSACTIONS_HISTORY_FILTER_MENU_OPT = 5
 TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU_OPT = 3
@@ -41,8 +45,14 @@ TRANSACTION_DETAILS_MENU_OPT = 5
 TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU_OPT = 8
 TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU_OPT = 9
 
+MAX_DESCRIPTION_LENGTH = 50
+MAX_NAME_LENGTH = 20
+
 BREADCRUMBS = {
     "main_menu": "You Are Here:\n[Main Menu]",
+    "budgets_menu": "You Are Here:\nMain Menu > [Budgets]",
+    "budgets_budget_details_menu": "You Are Here:\nMain Menu > Budgets > [Budget Details]",
+    "budgets_budget_details_categories_menu": "You Are Here:\nMain Menu > Budgets > Budget Details > [Categories]",
     "transactions_history_menu": "You Are Here:\nMain Menu > [Transactions]",
     "transactions_history_filter_menu": "You Are Here:\nMain Menu > Transactions > [Manage Filters]",
     "transactions_history_filter_categories_menu": "You Are Here:\nMain Menu > Transactions > Manage Filters > [Categories]",
@@ -78,10 +88,13 @@ CATEGORIES_INCOME = {
 }
 
 MESSAGES = {
+    "error_message_general": "Something went wrong. Please try again.",
     "add_date": "Type in the date (YYYY-MM-DD / YYYY MM DD) or type 'cancel' to abort.",
     "add_date_end": "Type in the end date. Press Enter/Return to continue\nor type 'cancel' to abort.",
     "add_time": "Type in the time (HH:MM:SS / HH:MM) or type 'cancel' to abort.",
     "add_time_end": "Type in the end time. Press Enter/Return to continue\nor type 'cancel' to abort.",
+    "add_limit": "Type in the budget's limit or type 'cancel' to abort.",
+    "add_name": "Type in the desired name or type 'cancel' to abort.",
     "insert_amount": "Type in the desired amount.",
     "insert_description": "Type in the desired description, or type in 'cancel' to abort.",
     "insufficient_funds": "Adding this expense will cause balance to be negative!",
@@ -90,11 +103,15 @@ MESSAGES = {
     "invalid_date": "Date invalid! Accepted format is YYYY-MM-DD or YYYY MM DD.\nType 'cancel' to abort.",
     "invalid_time": "Time invalid! Accepted format is HH:MM:DD or HH:MM.\nType 'cancel' to abort.",
     "invalid_description": "Desired description is too long! Try again or type in 'cancel' to abort.",
+    "invalid_name": "The name you entered is too long! Try again or type in 'cancel' to abort.",
+    "invalid_text": "Try typing in only letters and numbers, nothing fancier than that.\nOr 'cancel' to abort.",
     "cancel": "Type in 'cancel' if you'd like to abort.",
+    "select_budget_category": "Choose a budget category or type 'cancel' to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
     "select_month": "Type in month number (1-12) or name (e.g., January)\nOr type 'cancel' to abort.",
     "select_year": "Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
     "select_transaction": "Select a transaction by typing in its 'Index'\nOr type 'cancel' to abort.",
+    "budget_save_successful": "Budget saved successfully!",
     "successful_transaction": "Transaction saved successfully!",
     "successful_transaction_update": "Transaction updated successfully!",
     "successful_transaction_deleted": "Transaction deleted successfully!",
@@ -107,22 +124,31 @@ MENUS = {
         ("2. Add income", "menu_option"),
         ("3. Add expense", "menu_option"),
         ("4. View transactions", "menu_option"),
-        ("5. Quit", "menu_option"),
+        ("5. View budgets", "menu_option"),
+        ("6. Quit", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "budgets_menu": [
         ("What do you want to do?", "menu_question_main"),
         ("1. Back to main menu", "menu_option"),
         ("2. Create budget", "menu_option"),
-        ("3. View budgets", "menu_option"),
+        ("3. Select budget", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "budgets_budget_details_menu": [
         ("What do you want to do?", "menu_question_main"),
         ("1. Back to budgets", "menu_option"),
         ("2. Edit budget name", "menu_option"),
         ("3. Edit spending limit", "menu_option"),
-        ("4. Edit category", "menu_option"),
+        ("4. Edit categories", "menu_option"),
         ("5. Delete budget", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
+    ],
+    "budgets_budget_details_categories_menu": [
+        ("What do you want to do?", "menu_question_main"),
+        ("1. Back to budget details", "menu_option"),
+        ("2. Add Category", "menu_option"),
+        ("3. Delete Category", "menu_option"),
     ],
     "transactions_history_menu": [
         ("What do you want to do?", "menu_question_main"),
@@ -262,7 +288,7 @@ def load_menu(user_view, transaction=None):
 
 
 def load_menu_helper(mode):
-    """Displays income categories available for selection"""
+    """Displays categories available for selection"""
     i = 1
     if mode == "income":
         for category in CATEGORIES_INCOME:
@@ -272,6 +298,17 @@ def load_menu_helper(mode):
         for category in CATEGORIES_EXPENSES:
             fmt.load_viewer(data=f"{i}. {CATEGORIES_EXPENSES[category]}", kind="menu_option")
             i += 1
+    elif mode == "combo":
+        all_cats = []
+        for category in CATEGORIES_INCOME:
+            all_cats.append(CATEGORIES_INCOME[category])
+        for category in CATEGORIES_EXPENSES:
+            if CATEGORIES_EXPENSES[category] not in all_cats:
+                all_cats.append(CATEGORIES_EXPENSES[category])
+        for cat in all_cats:
+            fmt.load_viewer(data=f"{i}. {cat}", kind="menu_option")
+            i += 1
+        fmt.load_viewer(data=MESSAGES["select_option"], kind="menu_question")
 
 
 def add_timestamp_filter(filters: dict, start, end, mode: str | None = None):

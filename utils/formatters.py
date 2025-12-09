@@ -35,6 +35,8 @@ class Formatter:
                         console.print(f"[yellow]{data}[/yellow]")
                     case "warning":
                         console.print(f"[magenta]{data}[/magenta]")
+                    case "failure":
+                        console.print(f"[red]{data}[/red]")
                     case "menu_question_main":
                         console.print(f"[bold][#FF8C00]{data}[/#FF8C00][/bold]")
                     case "menu_question":
@@ -92,3 +94,26 @@ class Formatter:
                                   str(data[0].description) if data[0].description else "[dim]n/a[/dim]",
                                   end_section=True)
                     console.print(table)
+
+    @staticmethod
+    def display_budgets(data=None):
+        if isinstance(data, list):
+            table = Table(show_header=True, header_style="bold")
+            table.add_column("Index", justify="right")
+            table.add_column("Created on", justify="right")
+            table.add_column("Name", justify="right")
+            table.add_column("Limit", justify="right")
+            table.add_column("Applies to", justify="right")
+            table.add_column("Status", justify="right")
+            i = 1
+            for budget in data:
+                displayed_categories = []
+                budget.timestamp = budget.timestamp[:10]
+                for cat in budget.categories:
+                    displayed_categories.append(cat)
+                printed_categories = ", ".join(displayed_categories)
+                table.add_row(f"[bold cyan]{str(budget.index)}[/bold cyan].", budget.timestamp, budget.name,
+                              str(budget.limit),
+                              printed_categories, "temp_value", end_section=True)
+                i += 1
+            console.print(table)

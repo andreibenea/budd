@@ -29,9 +29,11 @@ class FileHandler:
                 transactions.append(transaction)
             for budget_data in data['budgets']:
                 index = budget_data['index']
-                name = budget_data['name']
                 timestamp = budget_data['timestamp']
-                categories = budget_data['categories']
+                name = budget_data['name']
+                categories = []
+                for category in budget_data['categories']:
+                    categories.append(category)
                 limit = budget_data['limit']
                 budget = Budget(index=index, name=name, timestamp=timestamp, categories=categories, limit=limit)
                 budgets.append(budget)

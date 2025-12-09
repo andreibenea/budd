@@ -1,12 +1,15 @@
 from datetime import datetime
 from utils.utils import UserView as view, MESSAGES, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MAIN_MENU_OPT, \
-    BUDGETS_MENU_OPT, BUDGETS_BUDGET_DETAILS_OPT, TRANSACTIONS_HISTORY_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_MENU_OPT, \
+    BUDGETS_MENU_OPT, BUDGETS_BUDGET_DETAILS_MENU_OPT, BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU_OPT, \
+    BUDGETS_BUDGET_CATEGORIES_MENU_OPT, TRANSACTIONS_HISTORY_MENU_OPT, \
+    TRANSACTIONS_HISTORY_FILTER_MENU_OPT, \
     TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU_OPT, \
     TRANSACTION_SELECTED_MENU_OPT, TRANSACTION_SELECTED_DELETE_MENU_OPT, \
     TRANSACTION_DETAILS_MENU_OPT, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU_OPT, \
     TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU_OPT, \
     TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU_OPT, \
-    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU_OPT
+    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU_OPT, \
+    MAX_NAME_LENGTH, MAX_DESCRIPTION_LENGTH
 from utils.exceptions import InsufficientFundsError
 from utils.formatters import Formatter as fmt
 from models.account import Account
@@ -32,6 +35,18 @@ class ValidateUserInput:
                 match user_view:
                     case view.MAIN_MENU:
                         if choice not in range(1, MAIN_MENU_OPT + 1):
+                            raise ValueError
+                    case view.BUDGETS_MENU:
+                        if choice not in range(1, BUDGETS_MENU_OPT + 1):
+                            raise ValueError
+                    case view.BUDGETS_BUDGET_DETAILS_MENU:
+                        if choice not in range(1, BUDGETS_BUDGET_DETAILS_MENU_OPT + 1):
+                            raise ValueError
+                    case view.BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU:
+                        if choice not in range(1, BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU_OPT + 1):
+                            raise ValueError
+                    case view.BUDGETS_BUDGET_CATEGORIES_MENU:
+                        if choice not in range(1, BUDGETS_BUDGET_CATEGORIES_MENU_OPT + 1):
                             raise ValueError
                     case view.TRANSACTIONS_HISTORY_MENU:
                         if choice not in range(1, TRANSACTIONS_HISTORY_MENU_OPT + 1):
@@ -81,6 +96,18 @@ class ValidateUserInput:
                 fmt.load_viewer(data="Type in number corresponding to your choice\nOr type 'cancel' to abort.",
                                 kind="warning")
                 choice = input("> ").strip().lower()
+        if kind == "budget":
+            i = 1
+            categories_combo = []
+            for cat in CATEGORIES_INCOME:
+                categories_combo.append(CATEGORIES_INCOME[cat])
+            for cat in CATEGORIES_EXPENSES:
+                if cat not in categories_combo:
+                    categories_combo.append(CATEGORIES_EXPENSES[cat])
+            for c in categories_combo:
+                if i == choice:
+                    choice = c
+                i += 1
         if kind and user_view != "transaction_details_category_menu":
             i = 1
             if kind == "income":
@@ -97,7 +124,7 @@ class ValidateUserInput:
 
     @staticmethod
     def is_amount_valid(account: "Account", amount: str, kind: str | None = None,
-                        transaction: "Transaction | None" = None):
+                        transaction: "Transaction | None" = None) -> tuple[bool, float | str]:
         if kind == "income":
             while True:
                 if amount == "cancel":
@@ -150,15 +177,30 @@ class ValidateUserInput:
             return True, amount
 
     @staticmethod
-    def is_description_valid(description: str):
+    def validate_text(text: str, kind: str):
         while True:
-            if description == "cancel":
-                return False, description
-            if len(description) > 50:
-                fmt.load_viewer(data=MESSAGES["invalid_description"], kind="warning")
-                description = input("> ").strip().lower()
-            break
-        return True, description
+            if text == "cancel":
+                return False, text
+            try:
+                if not text and kind != "name":
+                    break
+                if not text.replace(" ", "").isalnum():
+                    raise ValueError
+                if kind == "description":
+                    assert len(text) < MAX_DESCRIPTION_LENGTH
+                elif kind == "name":
+                    assert len(text) < MAX_NAME_LENGTH
+                break
+            except ValueError:
+                fmt.load_viewer(data=MESSAGES["invalid_text"], kind="warning")
+                text = input("> ").strip().lower()
+            except AssertionError:
+                if kind == "description":
+                    fmt.load_viewer(data=MESSAGES["invalid_description"], kind="warning")
+                elif kind == "name":
+                    fmt.load_viewer(data=MESSAGES["invalid_name"], kind="warning")
+                text = input("> ").strip().lower()
+        return True, text
 
     @staticmethod
     def is_date_valid(date: str):

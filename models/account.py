@@ -28,6 +28,12 @@ class Account:
             self._budgets.remove(budget)
 
     def get_budgets(self) -> list:
+        budgets = self.order_transactions(self._budgets)
+        i = 1
+        for budget in budgets:
+            budget.set_index(i)
+            i += 1
+        self._budgets = budgets
         return self._budgets
 
     def load_budgets(self, budgets):
