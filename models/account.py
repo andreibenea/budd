@@ -1,3 +1,4 @@
+from models.budget import Budget
 from models.transaction import Transaction
 from utils.utils import CATEGORIES_INCOME, CATEGORIES_EXPENSES
 from datetime import datetime
@@ -7,6 +8,7 @@ class Account:
     def __init__(self):
         self._balance = 0
         self._transactions = []
+        self._budgets = []
 
     def check_balance(self) -> int:
         balance = 0
@@ -18,7 +20,20 @@ class Account:
         self._balance = balance
         return self._balance
 
-    def get_transactions(self):
+    def add_budget(self, budget: Budget):
+        self._budgets.append(budget)
+
+    def delete_budget(self, budget: Budget):
+        if budget in self._budgets:
+            self._budgets.remove(budget)
+
+    def get_budgets(self) -> list:
+        return self._budgets
+
+    def load_budgets(self, budgets):
+        self._budgets = budgets
+
+    def get_transactions(self) -> list:
         transactions = self.order_transactions(self._transactions)
         i = 1
         for transaction in transactions:

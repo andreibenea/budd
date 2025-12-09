@@ -1,6 +1,7 @@
 import os
 import json
 from models.account import Account
+from models.budget import Budget
 from models.transaction import Transaction
 
 
@@ -13,6 +14,7 @@ class FileHandler:
         with open(account_file, 'r') as f:
             data = json.load(f)
             transactions = []
+            budgets = []
             for trans_data in data['transactions']:
                 amount = trans_data['amount']
                 kind = trans_data['kind']
@@ -25,15 +27,24 @@ class FileHandler:
                                           timestamp=timestamp, index=index,
                                           description=description)
                 transactions.append(transaction)
+            for budget_data in data['budgets']:
+                index = budget_data['index']
+                name = budget_data['name']
+                timestamp = budget_data['timestamp']
+                category = budget_data['category']
+                limit = budget_data['limit']
+                budget = Budget(index=index, name=name, timestamp=timestamp, category=category, limit=limit)
+                budgets.append(budget)
             acc = Account()
             acc.load_balance(data['balance'])
             acc.load_transactions(transactions)
+            acc.load_budgets(budgets)
         return acc
 
     def save_account(self, account: Account):
         self._ensure_data_directory()
         account_file = os.path.join(self.working_directory, 'data', 'account.json')
-        acc_as_dict = self._account_to_json(account=account)
+        acc_as_dict = self._data_to_json(data=account)
         with open(account_file, 'w') as f:
             f.write(json.dumps(acc_as_dict))
 
@@ -49,10 +60,12 @@ class FileHandler:
             return False
 
     @staticmethod
-    def _account_to_json(account: "Account"):
-        transactions = [t.__dict__ for t in account.get_transactions()]
+    def _data_to_json(data: "Account") -> dict:
+        transactions = [t.__dict__ for t in data.get_transactions()]
+        budgets = [b.__dict__ for b in data.get_budgets()]
         acc_as_dict = {
-            "balance": account.check_balance(),
-            "transactions": transactions
+            "balance": data.check_balance(),
+            "transactions": transactions,
+            "budgets": budgets
         }
         return acc_as_dict
