@@ -1,12 +1,12 @@
 from datetime import datetime
-from utils.utils import messages, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MAIN_MENU_OPTIONS, \
-    TRANSACTIONS_HISTORY_MENU, \
-    TRANSACTIONS_HISTORY_FILTER_MENU, \
-    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU, \
-    TRANSACTION_SELECTED_MENU, TRANSACTION_SELECTED_DELETE_MENU, \
-    TRANSACTION_DETAILS_MENU, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU, TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU, \
-    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU, \
-    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU
+from utils.utils import UserView as view, MESSAGES, CATEGORIES_INCOME, CATEGORIES_EXPENSES, MAIN_MENU_OPT, \
+    BUDGETS_MENU_OPT, BUDGETS_BUDGET_DETAILS_OPT, TRANSACTIONS_HISTORY_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_MENU_OPT, \
+    TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU_OPT, \
+    TRANSACTION_SELECTED_MENU_OPT, TRANSACTION_SELECTED_DELETE_MENU_OPT, \
+    TRANSACTION_DETAILS_MENU_OPT, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU_OPT, \
+    TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU_OPT, \
+    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU_OPT, \
+    TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU_OPT, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU_OPT
 from utils.exceptions import InsufficientFundsError
 from utils.formatters import Formatter as fmt
 from models.account import Account
@@ -30,50 +30,50 @@ class ValidateUserInput:
             try:
                 choice = int(choice)
                 match user_view:
-                    case "main_menu":
-                        if choice not in range(1, MAIN_MENU_OPTIONS + 1):
+                    case view.MAIN_MENU:
+                        if choice not in range(1, MAIN_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_filter_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_FILTER_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_filter_categories_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_filter_categories_incomes_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_INCOMES_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_filter_categories_expenses_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_CATEGORIES_EXPENSES_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_filter_datetime_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU_OPT + 1):
                             raise ValueError
-                    case "transactions_history_filter_datetime_quick_menu":
-                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU + 1):
+                    case view.TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU:
+                        if choice not in range(1, TRANSACTIONS_HISTORY_FILTER_DATETIME_QUICK_MENU_OPT + 1):
                             raise ValueError
-                    case "transaction_selected_menu":
-                        if choice not in range(1, TRANSACTION_SELECTED_MENU + 1):
+                    case view.TRANSACTION_SELECTED_MENU:
+                        if choice not in range(1, TRANSACTION_SELECTED_MENU_OPT + 1):
                             raise ValueError
-                    case "transaction_selected_delete_menu":
-                        if choice not in range(1, TRANSACTION_SELECTED_DELETE_MENU + 1):
+                    case view.TRANSACTION_SELECTED_DELETE_MENU:
+                        if choice not in range(1, TRANSACTION_SELECTED_DELETE_MENU_OPT + 1):
                             raise ValueError
-                    case "transaction_details_menu":
-                        if choice not in range(1, TRANSACTION_DETAILS_MENU + 1):
+                    case view.TRANSACTION_DETAILS_MENU:
+                        if choice not in range(1, TRANSACTION_DETAILS_MENU_OPT + 1):
                             raise ValueError
-                    case "transaction_details_category_menu":
+                    case view.TRANSACTION_DETAILS_CATEGORY_MENU:
                         if kind == "income":
-                            if choice not in range(1, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU + 1):
+                            if choice not in range(1, TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU_OPT + 1):
                                 raise ValueError
                         elif kind == "expense":
-                            if choice not in range(1, TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU + 1):
+                            if choice not in range(1, TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU_OPT + 1):
                                 raise ValueError
-                    case "add_income":
+                    case view.ADD_INCOME_MENU:
                         if choice not in range(1, len(CATEGORIES_INCOME) + 1):
                             raise ValueError
-                    case "add_expense":
+                    case view.ADD_EXPENSE_MENU:
                         if choice not in range(1, len(CATEGORIES_EXPENSES) + 1):
                             raise ValueError
                 break
@@ -108,7 +108,7 @@ class ValidateUserInput:
                         raise ValueError
                     break
                 except ValueError:
-                    fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
+                    fmt.load_viewer(data=MESSAGES["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
             return True, amount
         if kind == "expense":
@@ -139,13 +139,13 @@ class ValidateUserInput:
                                     causing_negative_balance = False
                     break
                 except InsufficientFundsError:
-                    fmt.load_viewer(data=messages["insufficient_funds"], kind="warning")
-                    fmt.load_viewer(data=messages["insufficient_funds_continue"], kind="warning")
+                    fmt.load_viewer(data=MESSAGES["insufficient_funds"], kind="warning")
+                    fmt.load_viewer(data=MESSAGES["insufficient_funds_continue"], kind="warning")
                     causing_negative_balance = True
                     initial_amount = amount
                     amount = input("> ").strip().lower()
                 except ValueError:
-                    fmt.load_viewer(data=messages["invalid_amount"], kind="warning")
+                    fmt.load_viewer(data=MESSAGES["invalid_amount"], kind="warning")
                     amount = input("> ").strip().lower()
             return True, amount
 
@@ -155,7 +155,7 @@ class ValidateUserInput:
             if description == "cancel":
                 return False, description
             if len(description) > 50:
-                fmt.load_viewer(data=messages["invalid_description"], kind="warning")
+                fmt.load_viewer(data=MESSAGES["invalid_description"], kind="warning")
                 description = input("> ").strip().lower()
             break
         return True, description
@@ -174,7 +174,7 @@ class ValidateUserInput:
                 date = normalized
                 break
             except ValueError:
-                fmt.load_viewer(data=messages["invalid_date"], kind="warning")
+                fmt.load_viewer(data=MESSAGES["invalid_date"], kind="warning")
                 date = input("> ").strip().lower()
         return True, date
 
@@ -194,6 +194,6 @@ class ValidateUserInput:
                 time_input = normalized
                 break
             except ValueError:
-                fmt.load_viewer(data=messages["invalid_time"], kind="warning")
+                fmt.load_viewer(data=MESSAGES["invalid_time"], kind="warning")
                 time_input = input("> ").strip().lower()
         return True, time_input
