@@ -19,9 +19,8 @@ class ValidateUserInput:
     CURRENT_YEAR = datetime.now().year
     YEARS = range(1970, CURRENT_YEAR + 1)
 
-    def __init__(self, user_input: str | None, validation_type: str | None = None):
-        self.user_input = user_input
-        self.validation_type = validation_type
+    def __init__(self):
+        pass
 
     @staticmethod
     def validate_selection(choice: str, user_view: str | None = None, kind: str | None = None):

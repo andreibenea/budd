@@ -9,6 +9,13 @@ class Account:
         self._transactions = []
 
     def check_balance(self) -> int:
+        balance = 0
+        for transaction in self._transactions:
+            if transaction.kind == "income":
+                balance += transaction.amount
+            elif transaction.kind == "expense":
+                balance -= transaction.amount
+        self._balance = balance
         return self._balance
 
     def get_transactions(self):
@@ -19,22 +26,6 @@ class Account:
             i += 1
         self._transactions = transactions
         return self._transactions
-
-    def get_incomes(self):
-        incomes = []
-        for transaction in self._transactions:
-            if transaction.kind == "income":
-                incomes.append(transaction)
-        sorted_incomes = self.order_transactions(transactions=incomes)
-        return sorted_incomes
-
-    def get_expenses(self):
-        expenses = []
-        for transaction in self._transactions:
-            if transaction.kind == "expense":
-                expenses.append(transaction)
-        sorted_expenses = self.order_transactions(transactions=expenses)
-        return sorted_expenses
 
     def order_transactions(self, transactions):
         transactions_copy = transactions[:]
@@ -61,7 +52,6 @@ class Account:
 
     @staticmethod
     def filter_transactions(transactions: list, filters: dict):
-        # print(f"[DEBUG] Incoming FILTERS: {filters}")
         transactions_copy = transactions[:]
         filters_copy = filters.copy()
         filtered_transactions = []
@@ -129,9 +119,6 @@ class Account:
         return self._transactions
 
     def edit_transaction(self, transaction: Transaction, change_type: str, value: float | str):
-        # print(f"[DEBUG] Editing transaction: {transaction}")
-        # print(f"[DEBUG] Change type: {change_type}")
-        # print(f"[DEBUG] New value: {value}")
         match change_type:
             case "value":
                 if value == transaction.amount:

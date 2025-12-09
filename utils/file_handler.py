@@ -7,13 +7,11 @@ from models.transaction import Transaction
 class FileHandler:
     def __init__(self):
         self.working_directory = os.getcwd()
-        print(f"[DEBUG] {self.working_directory}")
 
     def load_account(self):
         account_file = os.path.join(self.working_directory, 'data', 'account.json')
         with open(account_file, 'r') as f:
             data = json.load(f)
-            # print(f"[DEBUG] {data}")
             transactions = []
             for trans_data in data['transactions']:
                 amount = trans_data['amount']

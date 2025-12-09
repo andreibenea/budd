@@ -14,7 +14,6 @@ class Formatter:
 
     @staticmethod
     def load_viewer(data=None, kind=None):
-        # print(f"[DEBUG] {type(data)}")
         if data and kind:
             if isinstance(data, str):
                 match kind:
@@ -33,13 +32,13 @@ class Formatter:
                         table.add_row(f"[red]{data}[/red]")
                         console.print(table)
                     case "success":
-                        console.print(f"[yellow]{data.capitalize()}[/yellow]")
+                        console.print(f"[yellow]{data}[/yellow]")
                     case "warning":
-                        console.print(f"[magenta]{data.capitalize()}[/magenta]")
+                        console.print(f"[magenta]{data}[/magenta]")
                     case "menu_question_main":
-                        console.print(f"[bold][#FF8C00]{data.capitalize()}[/#FF8C00][/bold]")
+                        console.print(f"[bold][#FF8C00]{data}[/#FF8C00][/bold]")
                     case "menu_question":
-                        console.print(f"[cyan]{data.capitalize()}[/cyan]")
+                        console.print(f"[cyan]{data}[/cyan]")
                     case "menu_option":
                         console.print(f"{data}")
                     case "transaction":
@@ -51,8 +50,6 @@ class Formatter:
                         table.add_column("Description")
 
             if isinstance(data, list):
-                # print(f"[DEBUG] DATA IS LIST")
-                # print(f"[DEBUG] KIND IS {kind}")
                 table = Table(show_header=True, header_style="bold")
                 table.add_column("Index", justify="right")
                 table.add_column("Timestamp", justify="right")
@@ -71,53 +68,8 @@ class Formatter:
                             color = "red"
                             transaction_balance -= item.amount
                         item.timestamp = item.timestamp[:19].replace("T", " ")
-                        # print(f"[DEBUG] i: {i}")
-                        # print(f"[DEBUG] len(data): {len(data)}")
                         table.add_row(f"[bold cyan]{item.index}[/bold cyan].", item.timestamp,
                                       f"[{color}]${str(item.amount)}[/{color}]", item.kind,
-                                      item.category,
-                                      item.description if item.description else f"[dim]n/a[/dim]",
-                                      end_section=True if i == len(data) else False)
-                        i += 1
-                    color = "green" if transaction_balance > -0.0001 else "red"
-                    table.add_row("[bold]TOTAL[/bold]", "", f"[{color}]${transaction_balance:.2f}[/{color}]",
-                                  "", "", "",
-                                  end_section=True)
-                    console.print(table)
-                elif kind == "incomes_list":
-                    # print(f"[DEBUG] Incomes List Data: {data}")
-                    for item in data:
-                        # print(f"[DEBUG] {item}")
-                        if item.kind != "income":
-                            continue
-                        transaction_balance += item.amount
-                        item.timestamp = item.timestamp[:19].replace("T", " ")
-                        # print(f"[DEBUG] i: {i}")
-                        # print(f"[DEBUG] len(data): {len(data)}")
-                        table.add_row(f"[bold cyan]{item.index}[/bold cyan].", item.timestamp,
-                                      f"[green]${str(item.amount)}[/green]", item.kind,
-                                      item.category,
-                                      item.description if item.description else f"[dim]n/a[/dim]",
-                                      end_section=True if i == len(data) else False)
-                        i += 1
-                    color = "green" if transaction_balance > -0.0001 else "red"
-                    table.add_row("[bold]TOTAL[/bold]", "", f"[{color}]${transaction_balance:.2f}[/{color}]",
-                                  "", "", "",
-                                  end_section=True)
-                    console.print(table)
-                elif kind == "expenses_list":
-                    # print(f"[DEBUG] Expenses List Data: {data}")
-                    for item in data:
-                        # print(f"[DEBUG] {item}, {item.kind}")
-                        if item.kind != "expense":
-                            continue
-                        transaction_balance -= item.amount
-                        item.timestamp = item.timestamp[:19].replace("T", " ")
-                        # print(f"[DEBUG] i: {i}")
-                        # print(f"[DEBUG] len(data): {len(data)}")
-                        table.add_row(f"[bold cyan]{item.index}[/bold cyan].", item.timestamp,
-                                      f"[red]${str(item.amount)}[/red]",
-                                      item.kind,
                                       item.category,
                                       item.description if item.description else f"[dim]n/a[/dim]",
                                       end_section=True if i == len(data) else False)
@@ -140,31 +92,3 @@ class Formatter:
                                   str(data[0].description) if data[0].description else "[dim]n/a[/dim]",
                                   end_section=True)
                     console.print(table)
-
-    @staticmethod
-    def transform_month_to_int(month_name):
-        match month_name:
-            case 'january':
-                return 1
-            case 'february':
-                return 2
-            case 'march':
-                return 3
-            case 'april':
-                return 4
-            case 'may':
-                return 5
-            case 'june':
-                return 6
-            case 'july':
-                return 7
-            case 'august':
-                return 8
-            case 'september':
-                return 9
-            case 'october':
-                return 10
-            case 'november':
-                return 11
-            case 'december':
-                return 12

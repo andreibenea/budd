@@ -1,9 +1,8 @@
-# Press ⌃R to run script
 import sys
 from models.account import Account
 from models.transaction import Transaction
-from utils.utils import load_menu, add_timestamp_filter, toggle_filter, messages, ascii_art, \
-    show_categories_income_menu, show_categories_expenses_menu, USER_VIEWS
+from utils.utils import load_menu, load_menu_helper, add_timestamp_filter, toggle_filter, messages, ascii_art, \
+    USER_VIEWS
 from utils.file_handler import FileHandler
 from utils.formatters import Formatter
 from utils.validators import ValidateUserInput as validator
@@ -28,9 +27,6 @@ def main_loop():
     filters = {}
     editing = None
     while True:
-        print(f"[DEBUG] user_view: {user_view}")
-        print(f"[DEBUG] filters: {filters}")
-        print(f"[DEBUG] editing: {editing}")
         match user_view:
             case "main_menu":
                 user_view, filters, editing = loop_main_menu(user_view, filters, editing)
@@ -120,6 +116,11 @@ def loop_transactions_history_menu(user_view, filters, editing):
 
 
 def loop_transactions_history_filter_menu(user_view, filters, editing):
+    """ Handles filter management menu where users can:
+        - Toggle transaction type (income/expense)
+        - Select categories to filter
+        - Add date/time filters
+        - Clear all filters """
     filtered_transactions = acc.filter_transactions(acc.get_transactions(), filters)
     fmt.load_viewer(data=filtered_transactions, kind="transactions_list")
     load_menu(user_view)
@@ -383,7 +384,7 @@ def loop_transaction_selected_menu(user_view, filters, editing):
             case 2:
                 """Delete transaction"""
                 fmt.load_viewer(data=f"This will permanently delete {editing}\nAre you sure?", kind="warning")
-                load_menu("transaction_selected_delete_menu")
+                load_menu(USER_VIEWS["transaction_selected_delete_menu"])
                 user_input = input("> ").strip().lower()
                 is_valid, user_input = validator.validate_selection(choice=user_input,
                                                                     user_view="transaction_selected_delete_menu")
@@ -478,7 +479,7 @@ def create_transaction(kind):
         user_input = input("> ").strip().lower()
         is_valid, amount = validator.is_amount_valid(account=acc, amount=user_input, kind="income")
         if is_valid:
-            show_categories_income_menu()
+            load_menu_helper(mode="income")
             fmt.load_viewer(data=messages["select_option"], kind="menu_question")
             category_choice = input("> ").strip().lower()
             is_cat_valid, category_choice = validator.validate_selection(choice=category_choice, user_view="add_income",
@@ -493,7 +494,7 @@ def create_transaction(kind):
         user_input = input("> ").strip().lower()
         is_valid, amount = validator.is_amount_valid(account=acc, amount=user_input, kind="expense")
         if is_valid:
-            show_categories_expenses_menu()
+            load_menu_helper(mode="expense")
             fmt.load_viewer(data=messages["select_option"], kind="menu_question")
             category_choice = input("> ").strip().lower()
             is_cat_valid, category_choice = validator.validate_selection(choice=category_choice,

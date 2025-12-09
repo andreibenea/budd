@@ -3,154 +3,37 @@ from utils.formatters import Formatter
 fmt = Formatter()
 
 
-def load_menu(user_view, filters: dict | None = None, transaction=None):
-    match user_view:
-        case "main_menu":
-            fmt.load_viewer(data="You Are Here:\n[Main Menu]", kind="path_to_view")
-            show_main_menu()
-        case "transactions_history_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > [Transactions]", kind="path_to_view")
-            show_transactions_history_menu()
-        case "transactions_history_filter_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Manage Filters]", kind="path_to_view")
-            show_transactions_history_filter_menu()
-        case "transactions_history_filter_categories_menu":
-            if filters:
-                if "kind" in filters:
-                    if filters["kind"] == "income":
-                        user_view = USER_VIEWS["transactions_history_filter_categories_incomes_menu"]
-                        load_menu(user_view, filters)
-                    elif filters["kind"] == "expense":
-                        user_view = USER_VIEWS["transactions_history_filter_categories_expenses_menu"]
-                        load_menu(user_view, filters)
-            else:
-                fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > [Categories]",
-                                kind="path_to_view")
-                show_transactions_history_filter_categories_menu()
-        case "transactions_history_filter_categories_incomes_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Incomes]",
-                            kind="path_to_view")
-            show_categories_income_menu_new()
-        case "transactions_history_filter_categories_expenses_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Expenses]",
-                            kind="path_to_view")
-            show_categories_expenses_menu_new()
-        case "transactions_history_filter_datetime_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Manage Filters > [Date & Time]",
-                            kind="path_to_view")
-            show_transactions_history_filter_datetime_menu()
-        case "transactions_history_filter_datetime_quick_menu":
-            fmt.load_viewer(
-                data="You Are Here:\nMain Menu > Transactions > Manage Filters > Date & Time > [Quick Filters]",
-                kind="path_to_view")
-            show_transactions_history_filter_datetime_quick_menu()
-        case "transaction_selected_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > [Selected Transaction]",
-                            kind="path_to_view")
-            show_transaction_selected_menu()
-        case "transaction_selected_delete_menu":
-            fmt.load_viewer(data="You Are Here:\nMain Menu > Transactions > Selected Transaction > [Confirm Deletion]",
-                            kind="path_to_view")
-            show_transaction_selected_delete_menu()
-        case "transaction_details_menu":
-            fmt.load_viewer(
-                data="You Are Here:\nMain Menu > Transactions > Selected Transaction > [Transaction Details]",
-                kind="path_to_view")
-            show_transaction_details_menu()
-        case "transaction_details_category_menu":
-            fmt.load_viewer(
-                data="You Are Here:\nMain Menu > Transactions > Selected Transaction > Transaction Details > [Categories]",
-                kind="path_to_view")
-            show_transaction_details_category_menu(transaction)
-
-
-def show_main_menu():
-    """Displays the main menu options for primary app navigation"""
-    for msg in menus["main_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transaction_selected_menu():
-    """Displays transaction editing options for selected transaction"""
-    for msg in menus["transaction_selected_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transaction_selected_delete_menu():
-    for msg in menus["transaction_selected_delete_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transaction_details_menu():
-    """Displays transaction detail modification options"""
-    for msg in menus["transaction_details_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transaction_details_category_menu(transaction):
-    if transaction.kind == "income":
-        for msg in menus["transaction_details_category_incomes_menu"]:
-            fmt.load_viewer(data=msg[0], kind=msg[1])
-    elif transaction.kind == "expense":
-        for msg in menus["transaction_details_category_expenses_menu"]:
+def load_menu(user_view, transaction=None):
+    """Displays relevant menu items and breadcrumbs for the user"""
+    if user_view in BREADCRUMBS:
+        fmt.load_viewer(data=BREADCRUMBS[user_view], kind="path_to_view")
+    if transaction:
+        if transaction.kind == "income":
+            for msg in menus["transaction_details_category_incomes_menu"]:
+                fmt.load_viewer(data=msg[0], kind=msg[1])
+        elif transaction.kind == "expense":
+            for msg in menus["transaction_details_category_expenses_menu"]:
+                fmt.load_viewer(data=msg[0], kind=msg[1])
+    else:
+        for msg in menus[user_view]:
             fmt.load_viewer(data=msg[0], kind=msg[1])
 
 
-def show_transactions_history_menu():
-    """Displays the transaction history submenu options"""
-    for msg in menus["transactions_history_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_filter_menu():
-    for msg in menus["transactions_history_filter_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_filter_datetime_menu():
-    for msg in menus["transactions_history_filter_datetime_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_filter_datetime_quick_menu():
-    for msg in menus["transactions_history_filter_datetime_quick_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_transactions_history_filter_categories_menu():
-    for msg in menus["transactions_history_filter_categories_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_categories_income_menu_new():
-    """Displays all income categories available for menu selection"""
-    for msg in menus["transactions_history_filter_categories_incomes_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_categories_expenses_menu_new():
-    """Displays all income categories available for menu selection"""
-    for msg in menus["transactions_history_filter_categories_expenses_menu"]:
-        fmt.load_viewer(data=msg[0], kind=msg[1])
-
-
-def show_categories_income_menu():
-    """Displays all income categories available for menu selection"""
+def load_menu_helper(mode):
+    """Displays income categories available for selection"""
     i = 1
-    for category in CATEGORIES_INCOME:
-        fmt.load_viewer(data=f"{i}. {CATEGORIES_INCOME[category]}", kind="menu_option")
-        i += 1
-
-
-def show_categories_expenses_menu():
-    """Displays all expenses categories available for menu selection"""
-    i = 1
-    for category in CATEGORIES_EXPENSES:
-        fmt.load_viewer(data=f"{i}. {CATEGORIES_EXPENSES[category]}", kind="menu_option")
-        i += 1
+    if mode == "income":
+        for category in CATEGORIES_INCOME:
+            fmt.load_viewer(data=f"{i}. {CATEGORIES_INCOME[category]}", kind="menu_option")
+            i += 1
+    elif mode == "expense":
+        for category in CATEGORIES_EXPENSES:
+            fmt.load_viewer(data=f"{i}. {CATEGORIES_INCOME[category]}", kind="menu_option")
+            i += 1
 
 
 def add_timestamp_filter(filters: dict, start, end, mode: str | None = None):
+    """Adds a filter that acts on the transaction's timestamp property"""
     date_filters = []
     new_entry = {}
     try:
@@ -173,6 +56,7 @@ def add_timestamp_filter(filters: dict, start, end, mode: str | None = None):
 
 
 def toggle_filter(filters, sub_category, kind: str | None = None):
+    """Toggles a category filter"""
     try:
         if filters["category"]:
             pass
@@ -357,6 +241,7 @@ USER_VIEWS = {
     "transaction_details_menu": "transaction_details_menu",
     "transaction_details_category_menu": "transaction_details_category_menu",
     "transaction_selected_menu": "transaction_selected_menu",
+    "transaction_selected_delete_menu": "transaction_selected_delete_menu",
     "transactions_history_menu": "transactions_history_menu",
     "transactions_history_filter_menu": "transactions_history_filter_menu",
     "transactions_history_filter_categories_menu": "transactions_history_filter_categories_menu",
@@ -368,21 +253,6 @@ USER_VIEWS = {
     "transactions_history_filter_datetime_quick_menu": "transactions_history_filter_datetime_quick_menu",
     "transactions_history_filter_datetime_timeframe_menu": "transactions_history_filter_datetime_timeframe_menu",
     "transactions_history_selection": "transactions_history_selection",
-}
-
-MONTHS = {
-    "january": "01", "jan": "01",
-    "february": "02", "feb": "02",
-    "march": "03", "mar": "03",
-    "april": "04", "apr": "04",
-    "may": "05",
-    "june": "06", "jun": "06",
-    "july": "07", "jul": "07",
-    "august": "08", "aug": "08",
-    "september": "09", "sep": "09", "sept": "09",
-    "october": "10", "oct": "10",
-    "november": "11", "nov": "11",
-    "december": "12", "dec": "12"
 }
 
 MAIN_MENU_OPTIONS = 5
@@ -398,6 +268,21 @@ TRANSACTION_SELECTED_DELETE_MENU = 2
 TRANSACTION_DETAILS_MENU = 5
 TRANSACTION_DETAILS_CATEGORY_INCOMES_MENU = 8
 TRANSACTION_DETAILS_CATEGORY_EXPENSES_MENU = 9
+
+BREADCRUMBS = {
+    "main_menu": "You Are Here:\n[Main Menu]",
+    "transactions_history_menu": "You Are Here:\nMain Menu > [Transactions]",
+    "transactions_history_filter_menu": "You Are Here:\nMain Menu > Transactions > [Manage Filters]",
+    "transactions_history_filter_categories_menu": "You Are Here:\nMain Menu > Transactions > Manage Filters > [Categories]",
+    "transactions_history_filter_categories_incomes_menu": "You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Incomes]",
+    "transactions_history_filter_categories_expenses_menu": "You Are Here:\nMain Menu > Transactions > Manage Filters > Categories > [Expenses]",
+    "transactions_history_filter_datetime_menu": "You Are Here:\nMain Menu > Transactions > Manage Filters > [Date & Time]",
+    "transactions_history_filter_datetime_quick_menu": "You Are Here:\nMain Menu > Transactions > Manage Filters > Date & Time > [Quick Filters]",
+    "transaction_selected_menu": "You Are Here:\nMain Menu > Transactions > [Selected Transaction]",
+    "transaction_selected_delete_menu": "You Are Here:\nMain Menu > Transactions > Selected Transaction > [Confirm Deletion]",
+    "transaction_details_menu": "You Are Here:\nMain Menu > Transactions > Selected Transaction > [Transaction Details]",
+    "transaction_details_category_menu": "You Are Here:\nMain Menu > Transactions > Selected Transaction > Transaction Details > [Categories]",
+}
 
 CATEGORIES_EXPENSES = {
     "food_and_dining": "Food & Dining",
