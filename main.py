@@ -200,7 +200,6 @@ def loop_budgets_budget_details_categories_menu(user_view, filters, editing):
                 user_view = view.BUDGETS_BUDGET_DETAILS_MENU
             case 2:
                 """Add category"""
-                # Implement selection function, just display categories (all maybe)
                 fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
                 load_menu_helper(mode="budget")
                 user_choice = input("> ").strip().lower()
@@ -647,12 +646,9 @@ def loop_transaction_details_category_menu(user_view, filters, editing):
         match int(user_input):
             case 1:
                 """Back to transaction details menu"""
-                try:
-                    if editing.temp_kind:
-                        editing.kind = editing.temp_kind
-                        del editing.temp_kind
-                except AttributeError:
-                    pass
+                if hasattr(editing, "temp_kind"):
+                    editing.kind = editing.temp_kind
+                    delattr(editing, "temp_kind")
             case _:
                 """Change to new selected category"""
                 acc.edit_transaction(transaction=editing, change_type="category", value=user_input - 1)
@@ -767,7 +763,7 @@ def create_transaction(kind):
                         kind="balance_bad" if acc.check_balance() < 0 else "balance_good")
 
 
-def select_entry(items_list: list, mode: str) -> type[Transaction | Budget | None]:
+def select_entry(items_list: list, mode: str) -> Transaction | Budget | None:
     if mode == "transaction":
         fmt.load_viewer(data=items_list, kind="transactions_list")
         fmt.load_viewer(data=MESSAGES["select_transaction"], kind="menu_question")

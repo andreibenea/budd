@@ -14,7 +14,7 @@ class Formatter:
         self.kwargs = kwargs
 
     @staticmethod
-    def load_viewer(data=None, kind=None, modifier=None):
+    def load_viewer(data=None, kind=None):
         if data and kind:
             if isinstance(data, str):
                 match kind:
