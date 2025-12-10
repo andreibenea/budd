@@ -6,7 +6,6 @@ from datetime import datetime
 
 class Account:
     def __init__(self):
-        self._balance = 0
         self._transactions = []
         self._budgets = []
 
@@ -17,8 +16,7 @@ class Account:
                 balance += transaction.amount
             elif transaction.kind == "expense":
                 balance -= transaction.amount
-        self._balance = balance
-        return self._balance
+        return balance
 
     def add_budget(self, budget: Budget):
         self._budgets.append(budget)
@@ -116,54 +114,26 @@ class Account:
                             filtered_transactions.append(transaction)
         return filtered_transactions
 
-    def load_balance(self, balance):
-        self._balance = balance
-
     def load_transactions(self, transactions):
         self._transactions = transactions
 
     def add_income(self, transaction: Transaction):
-        self._balance += transaction.amount
         self._transactions.append(transaction)
 
     def add_expense(self, transaction: Transaction):
-        tentative_balance = self._balance - transaction.amount
-        self._balance = tentative_balance
         self._transactions.append(transaction)
 
     def delete_transaction(self, transaction: Transaction):
-        if transaction.kind == "income":
-            self._balance -= transaction.amount
-        else:
-            self._balance += transaction.amount
         self._transactions.remove(transaction)
         return self._transactions
 
-    def edit_transaction(self, transaction: Transaction, change_type: str, value: float | str):
+    @staticmethod
+    def edit_transaction(transaction: Transaction, change_type: str, value: float | str):
         match change_type:
             case "value":
-                if value == transaction.amount:
-                    pass
-                elif value > transaction.amount:
-                    diff = value - transaction.amount
-                    if transaction.kind == "income":
-                        self._balance += diff
-                    elif transaction.kind == "expense":
-                        self._balance -= diff
-                elif value < transaction.amount:
-                    diff = transaction.amount - value
-                    if transaction.kind == "income":
-                        self._balance -= diff
-                    elif transaction.kind == "expense":
-                        self._balance += diff
                 transaction.amount = value
             case "kind":
-                if transaction.kind == "income":
-                    self._balance -= (2 * transaction.amount)
-                    transaction.kind = value
-                elif transaction.kind == "expense":
-                    self._balance += (2 * transaction.amount)
-                    transaction.kind = value
+                transaction.kind = value
             case "category":
                 if transaction.kind == "income":
                     i = 1

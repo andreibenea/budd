@@ -38,7 +38,6 @@ class FileHandler:
                 budget = Budget(index=index, name=name, timestamp=timestamp, categories=categories, limit=limit)
                 budgets.append(budget)
             acc = Account()
-            acc.load_balance(data['balance'])
             acc.load_transactions(transactions)
             acc.load_budgets(budgets)
         return acc
@@ -52,7 +51,7 @@ class FileHandler:
 
     def _ensure_data_directory(self):
         try:
-            data_path = os.path.join(os.getcwd(), self.working_directory, 'data')
+            data_path = os.path.join(self.working_directory, 'data')
             if not os.path.exists(data_path):
                 os.makedirs(data_path)
                 print('Data directory created')
@@ -66,7 +65,6 @@ class FileHandler:
         transactions = [t.__dict__ for t in data.get_transactions()]
         budgets = [b.__dict__ for b in data.get_budgets()]
         acc_as_dict = {
-            "balance": data.check_balance(),
             "transactions": transactions,
             "budgets": budgets
         }
