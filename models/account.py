@@ -105,10 +105,10 @@ class Account:
                                     if transaction not in filtered_transactions:
                                         filtered_transactions.append(transaction)
                             elif "time" in entry:
-                                if entry["time"][0].hour <= transaction_ts.hour <= entry["time"][1].hour:
-                                    if entry["time"][0].minute <= transaction_ts.minute <= entry["time"][1].minute:
-                                        if transaction not in filtered_transactions:
-                                            filtered_transactions.append(transaction)
+                                transaction_time = datetime.fromisoformat(transaction.timestamp).time()
+                                if entry["time"][0] <= transaction_time <= entry["time"][1]:
+                                    if transaction not in filtered_transactions:
+                                        filtered_transactions.append(transaction)
                     elif transaction.__dict__[flt] == filters_copy[flt]:
                         if transaction not in filtered_transactions:
                             filtered_transactions.append(transaction)

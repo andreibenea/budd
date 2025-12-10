@@ -516,14 +516,15 @@ def loop_transactions_history_filter_datetime_time_menu(user_view, filters, edit
     user_input = input("> ").strip().lower()
     is_time_valid, user_input = validator.is_time_valid(time_input=user_input)
     if is_time_valid:
-        start_time = datetime.fromisoformat(f"1900-01-01T{user_input}")
+        start_time = datetime.fromisoformat(f"1900-01-01T{user_input}").time()
         fmt.load_viewer(data=MESSAGES["add_time_end"], kind="menu_question_main")
         user_input = input("> ").strip().lower()
         is_end_time_valid, user_input = validator.is_time_valid(time_input=user_input)
         if is_end_time_valid:
-            end_time = datetime.fromisoformat(f"1900-01-01T{user_input}")
+            end_time = datetime.fromisoformat(f"1900-01-01T{user_input}").time()
         else:
-            end_time = start_time + timedelta(minutes=1)
+            end_time = (datetime.fromisoformat(f"1900-01-01T{start_time.strftime('%H:%M:%S')}")
+                        + timedelta(minutes=1)).time()
     if start_time and end_time:
         filters = add_timestamp_filter(filters, start_time, end_time, "time")
     user_view = view.TRANSACTIONS_HISTORY_FILTER_DATETIME_MENU
@@ -669,9 +670,6 @@ def create_budget():
         budget_limit = input("> ").strip().lower()
         is_limit_valid, budget_limit = validator.is_amount_valid(account=acc, amount=budget_limit, kind="income")
         if is_limit_valid:
-            """show categories"""
-            """REFACTOR INTO add_category() maybe as Budget method, 
-            use for adding/deleting cats in edit mode"""
             fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
             load_menu_helper(mode="budget")
             user_choice = input("> ").strip().lower()
