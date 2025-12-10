@@ -1,4 +1,5 @@
 import sys
+
 from models.account import Account
 from models.budget import Budget
 from models.transaction import Transaction
@@ -103,7 +104,7 @@ def loop_main_menu(user_view, filters, editing):
 
 def loop_budgets_menu(user_view, filters, editing):
     budgets = acc.get_budgets()
-    fmt.display_budgets(budgets)
+    fmt.display_budgets(budgets, acc.get_transactions())
     load_menu(user_view)
     user_input = input("> ").strip().lower()
     is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
@@ -115,17 +116,17 @@ def loop_budgets_menu(user_view, filters, editing):
                 user_view = view.MAIN_MENU
             case 2:
                 """Create budget"""
-                create_budget(acc)
+                create_budget()
             case 3:
                 """Select budget"""
-                # Load budgets up for selection by index
-                # editing will be the result of selection func
-                pass
+                editing = select_entry(items_list=budgets, mode="budget")
+                if editing:
+                    user_view = view.BUDGETS_BUDGET_DETAILS_MENU
     return user_view, filters, editing
 
 
 def loop_budgets_budget_details_menu(user_view, filters, editing):
-    # load_viewer_budgets(editing)
+    fmt.display_budgets(data=editing, transactions=acc.get_transactions())
     load_menu(user_view)
     user_input = input("> ").strip().lower()
     is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
@@ -139,14 +140,29 @@ def loop_budgets_budget_details_menu(user_view, filters, editing):
                 pass
             case 3:
                 """Edit spending limit"""
+                pass
             case 4:
                 """Edit category"""
+                pass
             case 5:
                 """Delete budget"""
-                # confirm deletion
-                # then move to budgets menu
-                editing = None
-                user_view = view.BUDGETS_MENU
+                fmt.load_viewer(data=f"This will permanently delete {editing}\nAre you sure?", kind="warning")
+                load_menu(view.TRANSACTION_SELECTED_DELETE_MENU)
+                user_input = input("> ").strip().lower()
+                is_valid, user_input = validator.validate_selection(choice=user_input,
+                                                                    user_view="transaction_selected_delete_menu")
+                if is_valid:
+                    match int(user_input):
+                        case 1:
+                            """Back to selected transaction"""
+                            return user_view, filters, editing
+                        case 2:
+                            """Delete selected transaction"""
+                            acc.delete_budget(editing)
+                            editing = None
+                            fh.save_account(account=acc)
+                            fmt.load_viewer(data=MESSAGES["budget_delete_successful"], kind="success")
+                            user_view = view.BUDGETS_MENU
     return user_view, filters, editing
 
 
@@ -187,7 +203,7 @@ def loop_transactions_history_menu(user_view, filters, editing):
                 user_view = view.TRANSACTIONS_HISTORY_FILTER_MENU
             case 3:
                 """Select transaction"""
-                selected_transaction = select_transaction(filtered_transactions)
+                selected_transaction = select_entry(items_list=filtered_transactions, mode="transaction")
                 if selected_transaction:
                     editing = selected_transaction
                     user_view = view.TRANSACTION_SELECTED_MENU
@@ -550,7 +566,7 @@ def loop_transaction_details_category_menu(user_view, filters, editing):
     return user_view, filters, editing
 
 
-def create_budget(account):
+def create_budget():
     """Validates input data and creates budget"""
     budget_categories = []
     fmt.load_viewer(data=MESSAGES["add_name"], kind="menu_question")
@@ -563,7 +579,7 @@ def create_budget(account):
         if is_limit_valid:
             """show categories"""
             fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
-            load_menu_helper(mode="combo")
+            load_menu_helper(mode="budget")
             user_choice = input("> ").strip().lower()
             is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
                                                                         user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
@@ -580,7 +596,7 @@ def create_budget(account):
                         break
                     elif confirmation == "y":
                         fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
-                        load_menu_helper(mode="combo")
+                        load_menu_helper(mode="budget")
                         user_choice = input("> ").strip().lower()
                         is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
                                                                                     user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
@@ -594,7 +610,7 @@ def create_budget(account):
                 else:
                     return
             budget = Budget(name=budget_name.capitalize(), limit=budget_limit, categories=budget_categories)
-            account.add_budget(budget)
+            acc.add_budget(budget)
             fh.save_account(account=acc)
             fmt.load_viewer(data=MESSAGES["budget_save_successful"], kind="success")
     return
@@ -645,13 +661,17 @@ def create_transaction(kind):
                         kind="balance_bad" if acc.check_balance() < 0 else "balance_good")
 
 
-def select_transaction(transactions):
-    fmt.load_viewer(data=transactions, kind="transactions_list")
-    fmt.load_viewer(data=MESSAGES["select_transaction"], kind="menu_question")
+def select_entry(items_list: list, mode: str) -> type[Transaction | Budget | None]:
+    if mode == "transaction":
+        fmt.load_viewer(data=items_list, kind="transactions_list")
+        fmt.load_viewer(data=MESSAGES["select_transaction"], kind="menu_question")
+    elif mode == "budget":
+        fmt.display_budgets(data=items_list, transactions=acc.get_transactions())
+        fmt.load_viewer(data=MESSAGES["select_budget"], kind="menu_question")
     selected_index = input("> ").strip().lower()
     available_indexes = []
-    for transaction in transactions:
-        available_indexes.append(transaction.index)
+    for entry in items_list:
+        available_indexes.append(entry.index)
     available_indexes.sort()
     while True:
         if selected_index == "cancel":
@@ -664,9 +684,9 @@ def select_transaction(transactions):
         except ValueError:
             fmt.load_viewer(data=MESSAGES["select_option"], kind="warning")
             selected_index = input("> ").strip().lower()
-    for transaction in transactions:
-        if selected_index == transaction.index:
-            return transaction
+    for entry in items_list:
+        if selected_index == entry.index:
+            return entry
     return None
 
 

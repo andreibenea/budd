@@ -99,8 +99,8 @@ class ValidateUserInput:
         if kind == "budget":
             i = 1
             categories_combo = []
-            for cat in CATEGORIES_INCOME:
-                categories_combo.append(CATEGORIES_INCOME[cat])
+            # for cat in CATEGORIES_INCOME:
+            #     categories_combo.append(CATEGORIES_INCOME[cat])
             for cat in CATEGORIES_EXPENSES:
                 if cat not in categories_combo:
                     categories_combo.append(CATEGORIES_EXPENSES[cat])

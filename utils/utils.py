@@ -31,7 +31,7 @@ MAIN_MENU_OPT = 6
 BUDGETS_MENU_OPT = 3
 BUDGETS_BUDGET_DETAILS_MENU_OPT = 5
 BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU_OPT = 3
-BUDGETS_BUDGET_CATEGORIES_MENU_OPT = 14
+BUDGETS_BUDGET_CATEGORIES_MENU_OPT = 8
 TRANSACTIONS_HISTORY_MENU_OPT = 3
 TRANSACTIONS_HISTORY_FILTER_MENU_OPT = 5
 TRANSACTIONS_HISTORY_FILTER_CATEGORIES_MENU_OPT = 3
@@ -106,12 +106,14 @@ MESSAGES = {
     "invalid_name": "The name you entered is too long! Try again or type in 'cancel' to abort.",
     "invalid_text": "Try typing in only letters and numbers, nothing fancier than that.\nOr 'cancel' to abort.",
     "cancel": "Type in 'cancel' if you'd like to abort.",
+    "select_budget": "Select a budget by typing in its 'Index'\nOr type 'cancel' to abort.",
     "select_budget_category": "Choose a budget category or type 'cancel' to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
     "select_month": "Type in month number (1-12) or name (e.g., January)\nOr type 'cancel' to abort.",
     "select_year": "Type in year (e.g. '1970', '2025').\nOr type 'cancel' to abort.",
     "select_transaction": "Select a transaction by typing in its 'Index'\nOr type 'cancel' to abort.",
     "budget_save_successful": "Budget saved successfully!",
+    "budget_delete_successful": "Budget deleted successfully!",
     "successful_transaction": "Transaction saved successfully!",
     "successful_transaction_update": "Transaction updated successfully!",
     "successful_transaction_deleted": "Transaction deleted successfully!",
@@ -298,10 +300,10 @@ def load_menu_helper(mode):
         for category in CATEGORIES_EXPENSES:
             fmt.load_viewer(data=f"{i}. {CATEGORIES_EXPENSES[category]}", kind="menu_option")
             i += 1
-    elif mode == "combo":
+    elif mode == "budget":
         all_cats = []
-        for category in CATEGORIES_INCOME:
-            all_cats.append(CATEGORIES_INCOME[category])
+        # for category in CATEGORIES_INCOME:
+        #     all_cats.append(CATEGORIES_INCOME[category])
         for category in CATEGORIES_EXPENSES:
             if CATEGORIES_EXPENSES[category] not in all_cats:
                 all_cats.append(CATEGORIES_EXPENSES[category])

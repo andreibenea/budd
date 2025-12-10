@@ -1,5 +1,6 @@
 from rich.console import Console
 from rich.table import Table
+from models.budget import Budget
 
 # from rich.layout import Layout
 # from rich.panel import Panel
@@ -13,7 +14,7 @@ class Formatter:
         self.kwargs = kwargs
 
     @staticmethod
-    def load_viewer(data=None, kind=None):
+    def load_viewer(data=None, kind=None, modifier=None):
         if data and kind:
             if isinstance(data, str):
                 match kind:
@@ -96,7 +97,21 @@ class Formatter:
                     console.print(table)
 
     @staticmethod
-    def display_budgets(data=None):
+    def display_budgets(data=None, transactions=None):
+        if isinstance(data, Budget):
+            table = Table(show_header=True, header_style="bold")
+            table.add_column("Timestamp", justify="right")
+            table.add_column("Name", justify="right")
+            table.add_column("Limit", justify="right")
+            table.add_column("Applies to", justify="right")
+            table.add_column("Status", justify="right")
+            displayed_categories = []
+            for cat in data.categories:
+                displayed_categories.append(cat)
+            printed_categories = ", ".join(displayed_categories)
+            table.add_row(str(data.timestamp), str(data.name), str(data.limit), printed_categories, "[dim]n/a[/dim]",
+                          end_section=True)
+            console.print(table)
         if isinstance(data, list):
             table = Table(show_header=True, header_style="bold")
             table.add_column("Index", justify="right")
@@ -107,6 +122,17 @@ class Formatter:
             table.add_column("Status", justify="right")
             i = 1
             for budget in data:
+                spent = calculate_spent(transactions, budget)
+                bar, status = create_budget_display(spent, budget.limit)
+                filled = bar.count("█")
+                if filled < 3:
+                    color = "green"
+                elif filled < 6:
+                    color = "yellow"
+                elif filled < 9:
+                    color = "orange"
+                else:
+                    color = "red"
                 displayed_categories = []
                 budget.timestamp = budget.timestamp[:10]
                 for cat in budget.categories:
@@ -114,6 +140,33 @@ class Formatter:
                 printed_categories = ", ".join(displayed_categories)
                 table.add_row(f"[bold cyan]{str(budget.index)}[/bold cyan].", budget.timestamp, budget.name,
                               str(budget.limit),
-                              printed_categories, "temp_value", end_section=True)
+                              printed_categories, f"[{color}]{bar}\n{status}[/{color}]", end_section=True)
                 i += 1
             console.print(table)
+
+
+def create_budget_display(spent, limit):
+    percentage = spent / limit
+    width = 10
+    filled = int(percentage * width)
+    if filled > width:
+        filled = width
+    empty = width - filled
+
+    bar = "█" * filled + "░" * empty
+    if percentage <= 1.0:
+        status = f"{percentage * 100:.0f}% Used"
+    else:
+        percent_over = (percentage - 1.0) * 100
+        status = f"{percent_over:.0f}% Over"
+
+    return bar, status
+
+
+def calculate_spent(transactions, budget):
+    spent = 0
+    for cat in budget.categories:
+        for transaction in transactions:
+            if transaction.category == cat:
+                spent += transaction.amount
+    return spent
