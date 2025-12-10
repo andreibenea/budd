@@ -105,11 +105,21 @@ class Formatter:
             table.add_column("Limit", justify="right")
             table.add_column("Applies to", justify="right")
             table.add_column("Status", justify="right")
+            spent = calculate_spent(transactions, data)
+            bar, status = create_budget_display(spent, data.limit)
+            filled = bar.count("█")
+            if filled < 5:
+                color = "green"
+            elif filled < 9:
+                color = "yellow"
+            else:
+                color = "red"
             displayed_categories = []
             for cat in data.categories:
                 displayed_categories.append(cat)
             printed_categories = ", ".join(displayed_categories)
-            table.add_row(str(data.timestamp), str(data.name), str(data.limit), printed_categories, "[dim]n/a[/dim]",
+            table.add_row(str(data.timestamp), str(data.name), str(data.limit), printed_categories,
+                          f"[{color}]{bar}\n{status}[/{color}]",
                           end_section=True)
             console.print(table)
         if isinstance(data, list):
@@ -125,12 +135,10 @@ class Formatter:
                 spent = calculate_spent(transactions, budget)
                 bar, status = create_budget_display(spent, budget.limit)
                 filled = bar.count("█")
-                if filled < 3:
+                if filled < 5:
                     color = "green"
-                elif filled < 6:
-                    color = "yellow"
                 elif filled < 9:
-                    color = "orange"
+                    color = "yellow"
                 else:
                     color = "red"
                 displayed_categories = []
@@ -158,7 +166,7 @@ def create_budget_display(spent, limit):
         status = f"{percentage * 100:.0f}% Used"
     else:
         percent_over = (percentage - 1.0) * 100
-        status = f"{percent_over:.0f}% Over"
+        status = f"{percent_over:.0f}% OVER"
 
     return bar, status
 

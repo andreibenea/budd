@@ -137,13 +137,35 @@ def loop_budgets_budget_details_menu(user_view, filters, editing):
                 user_view = view.BUDGETS_MENU
             case 2:
                 """Edit budget name"""
-                pass
+                fmt.load_viewer(data=MESSAGES["add_name"], kind="menu_question_main")
+                new_name = input("> ").strip().lower()
+                is_name_valid, new_name = validator.validate_text(text=new_name, kind="name")
+                if is_name_valid:
+                    for budget in acc.get_budgets():
+                        if budget == editing:
+                            budget.name = new_name.capitalize()
+                            editing = budget
+                    fh.save_account(acc)
+                    fmt.load_viewer(data=MESSAGES["budget_save_successful"], kind="success")
+                else:
+                    fmt.load_viewer(data=MESSAGES["error_message_general"], kind="failure")
             case 3:
                 """Edit spending limit"""
-                pass
+                fmt.load_viewer(data=MESSAGES["insert_amount"], kind="menu_question_main")
+                new_limit = input("> ").strip().lower()
+                is_amount_valid, new_limit = validator.is_amount_valid(account=acc, amount=new_limit, kind="income")
+                if is_amount_valid:
+                    for budget in acc.get_budgets():
+                        if budget == editing:
+                            budget.limit = new_limit
+                            editing = budget
+                    fh.save_account(acc)
+                    fmt.load_viewer(data=MESSAGES["budget_save_successful"], kind="success")
+                else:
+                    fmt.load_viewer(data=MESSAGES["error_message_general"], kind="failure")
             case 4:
-                """Edit category"""
-                pass
+                """Edit categories"""
+                user_view = view.BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU
             case 5:
                 """Delete budget"""
                 fmt.load_viewer(data=f"This will permanently delete {editing}\nAre you sure?", kind="warning")
@@ -167,6 +189,7 @@ def loop_budgets_budget_details_menu(user_view, filters, editing):
 
 
 def loop_budgets_budget_details_categories_menu(user_view, filters, editing):
+    fmt.display_budgets(data=editing, transactions=acc.get_transactions())
     load_menu(user_view)
     user_input = input("> ").strip().lower()
     is_valid, user_input = validator.validate_selection(choice=user_input, user_view=user_view)
@@ -178,11 +201,84 @@ def loop_budgets_budget_details_categories_menu(user_view, filters, editing):
             case 2:
                 """Add category"""
                 # Implement selection function, just display categories (all maybe)
-                pass
+                fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
+                load_menu_helper(mode="budget")
+                user_choice = input("> ").strip().lower()
+                is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
+                                                                            user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
+                                                                            kind="budget")
+                for budget in acc.get_budgets():
+                    if budget == editing:
+                        while True:
+                            if user_choice in budget.categories:
+                                fmt.load_viewer(data=MESSAGES["category_already_selected"], kind="warning")
+                                user_choice = input("> ").strip().lower()
+                                is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
+                                                                                            user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
+                                                                                            kind="budget")
+                                continue
+                            if is_choice_valid:
+                                if user_choice not in budget.categories:
+                                    budget.categories.append(user_choice)
+                                fmt.load_viewer(
+                                    data="Would you like to add another category?\n\t* Y / N *\nYou can also type 'cancel' to abort.",
+                                    kind="menu_question")
+                                confirmation = input("> ").strip().lower()
+                                if confirmation == "n" or confirmation == "cancel":
+                                    break
+                                elif confirmation == "y":
+                                    fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
+                                    load_menu_helper(mode="budget")
+                                    user_choice = input("> ").strip().lower()
+                                    is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
+                                                                                                user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
+                                                                                                kind="budget")
+                                else:
+                                    fmt.load_viewer(data="Type in either 'y' or 'n'", kind="warning")
+                                    user_choice = input("> ").strip().lower()
+                                    is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
+                                                                                                user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
+                                                                                                kind="budget")
+                            else:
+                                return user_view, filters, editing
+                return user_view, filters, editing
             case 3:
                 """Delete category"""
-                # Confirm category deletion, generate indexed list of categories
-                pass
+                fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
+                for budget in acc.get_budgets():
+                    if budget == editing:
+                        if len(budget.categories) <= 1:
+                            fmt.load_viewer(data=f"A budget must have at least one category! Cannot complete action.",
+                                            kind="failure")
+                            return user_view, filters, editing
+                        i = 1
+                        choices = []
+                        for category in budget.categories:
+                            fmt.load_viewer(data=f"{i}. {category}", kind="menu_option")
+                            choices.append(i)
+                            i += 1
+                            print(f"[DEBUG] i after each: {i}")
+                        fmt.load_viewer(data=MESSAGES["select_option"], kind="menu_question")
+                        user_input = input("> ").strip().lower()
+                        while True:
+                            try:
+                                if user_input == "cancel":
+                                    return user_view, filters, editing
+                                user_input = int(user_input)
+                                if user_input not in choices:
+                                    raise ValueError
+                                break
+                            except ValueError:
+                                fmt.load_viewer(data=MESSAGES["select_option"], kind="warning")
+                                user_input = input("> ").strip().lower()
+                        print(f"[DEBUG] i before c: {i}")
+                        c = 2
+                        for category in budget.categories:
+                            if c == i:
+                                budget.categories.remove(category)
+                                fh.save_account(acc)
+                                fmt.load_viewer(data=MESSAGES["category_delete_successful"], kind="success")
+                            c += 1
     return user_view, filters, editing
 
 
@@ -578,6 +674,8 @@ def create_budget():
         is_limit_valid, budget_limit = validator.is_amount_valid(account=acc, amount=budget_limit, kind="income")
         if is_limit_valid:
             """show categories"""
+            """REFACTOR INTO add_category() maybe as Budget method, 
+            use for adding/deleting cats in edit mode"""
             fmt.load_viewer(data=MESSAGES["select_budget_category"], kind="menu_question_main")
             load_menu_helper(mode="budget")
             user_choice = input("> ").strip().lower()
@@ -585,6 +683,13 @@ def create_budget():
                                                                         user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
                                                                         kind="budget")
             while True:
+                if user_choice in budget_categories:
+                    fmt.load_viewer(data=MESSAGES["category_already_selected"], kind="warning")
+                    user_choice = input("> ").strip().lower()
+                    is_choice_valid, user_choice = validator.validate_selection(choice=user_choice,
+                                                                                user_view=view.BUDGETS_BUDGET_CATEGORIES_MENU,
+                                                                                kind="budget")
+                    continue
                 if is_choice_valid:
                     if user_choice not in budget_categories:
                         budget_categories.append(user_choice)
@@ -609,10 +714,11 @@ def create_budget():
                                                                                     kind="budget")
                 else:
                     return
-            budget = Budget(name=budget_name.capitalize(), limit=budget_limit, categories=budget_categories)
-            acc.add_budget(budget)
-            fh.save_account(account=acc)
-            fmt.load_viewer(data=MESSAGES["budget_save_successful"], kind="success")
+            if is_name_valid and is_limit_valid and is_choice_valid:
+                budget = Budget(name=budget_name.capitalize(), limit=budget_limit, categories=budget_categories)
+                acc.add_budget(budget)
+                fh.save_account(account=acc)
+                fmt.load_viewer(data=MESSAGES["budget_save_successful"], kind="success")
     return
 
 

@@ -7,7 +7,7 @@ class UserView:
     MAIN_MENU = "main_menu"
     BUDGETS_MENU = "budgets_menu"
     BUDGETS_BUDGET_DETAILS_MENU = "budgets_budget_details_menu"
-    BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU = "budgets_budget_category_details_menu"
+    BUDGETS_BUDGET_DETAILS_CATEGORIES_MENU = "budgets_budget_details_categories_menu"
     BUDGETS_BUDGET_CATEGORIES_MENU = "budgets_budget_categories_menu"
     ADD_INCOME_MENU = "add_income_menu"
     ADD_EXPENSE_MENU = "add_expense_menu"
@@ -106,6 +106,8 @@ MESSAGES = {
     "invalid_name": "The name you entered is too long! Try again or type in 'cancel' to abort.",
     "invalid_text": "Try typing in only letters and numbers, nothing fancier than that.\nOr 'cancel' to abort.",
     "cancel": "Type in 'cancel' if you'd like to abort.",
+    "category_already_selected": "This category is already selected. Choose a different one or type 'cancel' to abort.",
+    "category_delete_successful": "Category was successfully deleted.",
     "select_budget": "Select a budget by typing in its 'Index'\nOr type 'cancel' to abort.",
     "select_budget_category": "Choose a budget category or type 'cancel' to abort.",
     "select_option": "Type in number corresponding to your choice\nOr type 'cancel' to abort.",
@@ -151,6 +153,7 @@ MENUS = {
         ("1. Back to budget details", "menu_option"),
         ("2. Add Category", "menu_option"),
         ("3. Delete Category", "menu_option"),
+        ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "transactions_history_menu": [
         ("What do you want to do?", "menu_question_main"),
