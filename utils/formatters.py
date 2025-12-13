@@ -50,7 +50,7 @@ class Formatter:
                         table.add_column("Value")
                         table.add_column("Type")
                         table.add_column("Category")
-                        table.add_column("Description")
+                        table.add_column("Notes")
 
             if isinstance(data, list):
                 table = Table(show_header=True, header_style="bold")
@@ -59,7 +59,7 @@ class Formatter:
                 table.add_column("Value", justify="right")
                 table.add_column("Type", justify="right")
                 table.add_column("Category", justify="right")
-                table.add_column("Description", justify="right")
+                table.add_column("Notes", justify="right")
                 transaction_balance = 0
                 i = 1
                 if kind == "transactions_list":
@@ -89,7 +89,7 @@ class Formatter:
                     table.add_column("Value", justify="right")
                     table.add_column("Type", justify="right")
                     table.add_column("Category", justify="right")
-                    table.add_column("Description", justify="right")
+                    table.add_column("Notes", justify="right")
                     table.add_row(str(data[0].timestamp), f"[{color}]{str(data[0].amount)}[/{color}]",
                                   str(data[0].kind), str(data[0].category),
                                   str(data[0].description) if data[0].description else "[dim]n/a[/dim]",

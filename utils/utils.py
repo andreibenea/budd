@@ -236,7 +236,7 @@ MENUS = {
         ("2. Edit transaction value", "menu_option"),
         ("3. Change transaction type", "menu_option"),
         ("4. Edit transaction category", "menu_option"),
-        ("5. Edit transaction description", "menu_option"),
+        ("5. Edit transaction notes", "menu_option"),
         ("Type in the number corresponding to your choice:", "menu_question"),
     ],
     "transaction_details_category_incomes_menu": [
